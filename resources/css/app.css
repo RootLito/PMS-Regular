@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Poppins','Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+
+
+
+.print{
+    width: 794px;
+    height: 1123px;
+    background-color: white;
+    position: relative;
+    padding: 96px;
+    font-family: 'Cambria', serif;
+    font-size: 12pt;
+    box-sizing: border-box;
+}
+
+.print img{
+    position: absolute;
+}
+
+.print img:nth-child(1){
+    left: 0;
+    top: 0;
+}
+
+.print img:nth-child(2){
+    left: 0;
+    bottom: 0;
+}
+
+.title{
+    font-size: 14pt;
+}
+
+
+
+.cn{
+    position: absolute;
+    left: 96px;
+    bottom: 132px;
+    font-style: italic;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .print, .print * {
+    visibility: visible;
+  }
+  
+  .print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 794px;
+    height: 1123px;
+    background-color: white;
+  }
+}
