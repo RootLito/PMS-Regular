@@ -9,7 +9,6 @@
                 PAYROLL
             </h2>
         </div>
-        {{-- @livewire('dashboard-data') --}}
-        EYYYY
+        @livewire('regular-payroll-data')
     </div>
 @endsection

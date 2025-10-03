@@ -19,4 +19,9 @@ class Employee extends Model
         'gender',
         'sl_code',
     ];
+
+    public function contribution()
+{
+    return $this->hasOne(Contribution::class, 'employee_id');
+}
 }

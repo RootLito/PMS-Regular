@@ -52,7 +52,7 @@
             </div>
         @endif
 
-        <div class="w-56 h-screen sticky top-0 bg-white">
+        <div class="w-[224px] h-screen sticky top-0 bg-white">
             @include('partials.sidebar')
         </div>
         {{-- <div class="w-56 h-screen sticky top-0 bg-white">

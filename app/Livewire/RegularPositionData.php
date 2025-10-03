@@ -17,7 +17,7 @@ class RegularPositionData extends Component
     public $deletingId = null;
 
     protected $rules = [
-        'name' => 'required|string|max:255|unique:positions,name',  // adjust table name if needed
+        'name' => 'required|string|max:255|unique:positions,name', 
     ];
 
     protected $messages = [

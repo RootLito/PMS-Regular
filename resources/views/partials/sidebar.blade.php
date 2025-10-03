@@ -23,21 +23,21 @@
             Contribution
         </a>
 
-        <a href="/regular-computation" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
+        {{-- <a href="/regular-computation" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
         {{ request()->is('regular-computation*') ? 'bg-gray-300 text-gray-700' : '' }}">
             <i class="fa-solid fa-calculator ml-5 text-lg"></i>
             Computation
+        </a> --}}
+
+        <a href="/regular-analysis" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
+        {{ request()->is(patterns: 'regular-analysis*') ? 'bg-gray-300 text-gray-700' : '' }}">
+            <i class="fa-solid fa-chart-simple ml-5 text-lg"></i> Analysis
         </a>
 
         <a href="/regular-payroll" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
         {{ request()->is('regular-payroll*') ? 'bg-gray-300 text-gray-700' : '' }}">
             <i class="fa-solid fa-money-check ml-5 text-lg"></i>
             Payroll
-        </a>
-
-        <a href="/regular-analysis" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
-        {{ request()->is(patterns: 'regular-attendance*') ? 'bg-gray-300 text-gray-700' : '' }}">
-            <i class="fa-solid fa-chart-simple ml-5 text-lg"></i> Analysis
         </a>
 
         <a href="/regular-archive" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all

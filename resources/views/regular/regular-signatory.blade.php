@@ -9,7 +9,6 @@
                 SIGNATORY
             </h2>
         </div>
-        {{-- @livewire('dashboard-data') --}}
-        EYYYY
+        @livewire('signatories')
     </div>
 @endsection

@@ -9,7 +9,6 @@
                 ARCHIVE
             </h2>
         </div>
-        {{-- @livewire('dashboard-data') --}}
-        EYYYY
+        @livewire('archive-data')
     </div>
 @endsection
