@@ -17,7 +17,7 @@ class RegularPositionData extends Component
     public $deletingId = null;
 
     protected $rules = [
-        'name' => 'required|string|max:255|unique:positions,name', 
+        'name' => 'required|string|max:255|unique:regular_positions,name',
     ];
 
     protected $messages = [
@@ -33,7 +33,8 @@ class RegularPositionData extends Component
             'name' => $this->name,
         ]);
 
-        $this->dispatchBrowserEvent('success', ['message' => 'New Position added.']);
+        $this->dispatch('success', message: 'New Position added.');
+
         $this->reset('name');
     }
 
@@ -54,7 +55,7 @@ class RegularPositionData extends Component
     public function updatePosition()
     {
         $this->validate([
-            'editName' => 'required|string|max:255|unique:positions,name,' . $this->editingId,
+            'editName' => 'required|string|max:255|unique:regular_positions,name,' . $this->editingId,
         ], [
             'editName.required' => 'This field is required.',
             'editName.unique' => 'This position already exists.',
@@ -64,7 +65,8 @@ class RegularPositionData extends Component
         $position->name = $this->editName;
         $position->save();
 
-        $this->dispatchBrowserEvent('success', ['message' => 'Position updated successfully.']);
+        $this->dispatch('success', message: 'Position updated successfully.');
+
         $this->cancelEdit();
     }
 
@@ -83,7 +85,7 @@ class RegularPositionData extends Component
     {
         if ($this->deletingId) {
             Position::find($this->deletingId)?->delete();
-            $this->dispatchBrowserEvent('success', ['message' => 'Position deleted successfully.']);
+            $this->dispatch('success', message: 'Position deleted successfully.');
             $this->deletingId = null;
         }
     }

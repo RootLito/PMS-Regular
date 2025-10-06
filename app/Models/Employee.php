@@ -21,7 +21,12 @@ class Employee extends Model
     ];
 
     public function contribution()
-{
-    return $this->hasOne(Contribution::class, 'employee_id');
-}
+    {
+        return $this->hasOne(Contribution::class, 'employee_id');
+    }
+
+    public function officeDetails()
+    {
+        return $this->hasOne(Office::class, 'office', 'office');
+    }
 }
