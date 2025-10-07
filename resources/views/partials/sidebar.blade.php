@@ -4,7 +4,7 @@
 
         <h2 class="text-5xl text-center font-black text-slate-700">P.M.S.</h2>
     </div>
-    <div class="mt-16 flex flex-col gap-2">
+    <div class="mt-12 flex flex-col gap-2">
         <a href="/regular-dashboard" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
         {{ request()->is('regular-dashboard*') ? 'bg-gray-300 text-gray-700' : '' }}">
             <i class="fa-solid fa-house ml-5 text-lg"></i>
@@ -23,11 +23,11 @@
             Contribution
         </a>
 
-        {{-- <a href="/regular-computation" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
-        {{ request()->is('regular-computation*') ? 'bg-gray-300 text-gray-700' : '' }}">
-            <i class="fa-solid fa-calculator ml-5 text-lg"></i>
-            Computation
-        </a> --}}
+        <a href="/regular-credits" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
+        {{ request()->is('regular-credits*') ? 'bg-gray-300 text-gray-700' : '' }}">
+            <i class="fa-solid fa-file-alt ml-5 text-lg"></i>
+            Leave Credits
+        </a>
 
         <a href="/regular-analysis" class="flex bg-gray-100 items-center gap-2 h-10 text-sm font-semibold text-gray-700 rounded-lg hover:bg-gray-200 hover:text-gray-600 transition-all
         {{ request()->is(patterns: 'regular-analysis*') ? 'bg-gray-300 text-gray-700' : '' }}">
@@ -75,6 +75,12 @@
             {{ request()->is('regular-configuration/position') ? 'bg-gray-300 font-medium text-gray-800' : 'text-gray-600' }}">
                     <i class="fa-solid fa-user-tie ml-2 text-lg"></i>
                     Position
+                </a>
+                <a href="/regular-configuration/credits"
+                    class="flex items-center gap-2 font-semibold px-2 h-10 text-sm rounded hover:bg-gray-200 transition-all
+            {{ request()->is('regular-configuration/credits') ? 'bg-gray-300 font-medium text-gray-800' : 'text-gray-600' }}">
+                    <i class="fa-solid fa-file-alt ml-2 text-lg"></i>
+                    Leave Credits
                 </a>
                 <a href="/regular-configuration/signatory"
                     class="flex items-center gap-2 font-semibold px-2 h-10 text-sm rounded hover:bg-gray-200 transition-all

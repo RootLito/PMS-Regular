@@ -81,16 +81,24 @@ Route::middleware('auth')->group(function () {
     })->name('archive');
 
     Route::get('/regular-analysis', function () {
-        return view('regular.regular-analysis'); 
+        return view('regular.regular-analysis');
     })->name('analysis');
+
+    Route::get('/regular-credits', function () {
+        return view('regular.regular-credits');
+    })->name('regular-credits');
+
+    Route::get('/regular-credits/update/{id}', function ($id) {
+        return view('regular.update-credits', ['id' => $id]);
+    })->name('regular-credits.update');
 
     Route::get('/regular-configuration/position', function () {
         return view('regular.regular-position');
     })->name('position');
 
-    Route::get('/regular-configuration', function () {
-        return view('regular.regular-dashboard'); // or create regular-config.blade.php if needed
-    })->name('configuration');
+    Route::get('/regular-configuration/credits', function () {
+        return view('regular.credits-config'); 
+    })->name('credits');
 
     Route::get('/regular-configuration/account', function () {
         return view('regular.regular-account');
