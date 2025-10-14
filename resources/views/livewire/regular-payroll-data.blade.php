@@ -100,7 +100,8 @@
                 <thead>
                     <tr>
                         <th class="border border-gray-400 px-1 py-1" rowspan="4">NAME OF EMPLOYEE/<br>POSITION</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="4" class="bg-blue-100">MONTHLY SALARY<br>OTHER INCOME<br>AMOUNT</th>
+                        <th class="border border-gray-400 px-1 py-1" rowspan="4" class="bg-blue-100">MONTHLY
+                            SALARY<br>OTHER INCOME<br>AMOUNT</th>
                         <th class="border border-gray-400 px-1 py-1" rowspan="4">EARNED<br>FOR<br>PERIOD</th>
                         <th class="border border-gray-400 px-1 py-1" colspan="6">DEDUCTIONS</th>
                         <th class="border border-gray-400 px-1 py-1" rowspan="4">DEDUCTIONS</th>
@@ -123,8 +124,83 @@
                 </thead>
 
                 <tbody>
-                    
+                    @foreach ($employeesByOffice as $office => $employees)
+                    <tr>
+                        <td colspan="13" class="bg-gray-100 font-bold">{{ $office }}</td>
+                    </tr>
+
+                    @foreach ($employees as $employee)
+                    @php
+                    $c = $employee->contribution;
+                    @endphp
+                    <tr>
+                        <td class="border px-1 py-1">
+                            {{ $employee->first_name }} {{ $employee->last_name }}<br>
+                            <span class="italic text-gray-600">{{ $employee->position }}</span>
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($employee->monthly_rate, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($c->total_salary ?? 0, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($c->tax ?? 0, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($c->phic ?? 0, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($c->gsis_ps ?? 0, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format(($c->hdmf_ps ?? 0) + ($c->hdmf_mp2 ?? 0), 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-center">
+                            @php
+                            $knownKeys = ['tax', 'phic', 'gsis_ps', 'hdmf_ps', 'hdmf_mp2', 'total_salary',
+                            'total_charges', 'gross', 'rate_per_month', 'pera', 'leave_wo'];
+                            $others = collect($c?->toArray() ?? [])->filter(function($v, $k) use ($knownKeys) {
+                            return !in_array($k, $knownKeys) && $v != 0 && $v !== null;
+                            });
+                            $firstOther = $others->keys()->first();
+                            @endphp
+                            {{ strtoupper(str_replace('_', ' ', $firstOther ?? '')) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($others->first() ?? 0, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($c->total_charges ?? 0, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            @php
+                            $netPay = ($c->total_salary ?? 0) - ($c->total_charges ?? 0);
+                            @endphp
+                            ₱{{ number_format($netPay, 2) }}
+                        </td>
+
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($netPay / 2, 2) }}
+                        </td>
+                        <td class="border px-1 py-1 text-right">
+                            ₱{{ number_format($netPay / 2, 2) }}
+                        </td>
+                    </tr>
+                    @endforeach
+                    @endforeach
                 </tbody>
+
             </table>
         </div>
     </div>

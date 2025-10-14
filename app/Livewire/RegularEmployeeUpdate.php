@@ -8,8 +8,10 @@ use App\Models\Office;
 use Livewire\Component;
 use App\Models\Position;
 
-class RegularEmployeeForm extends Component
+class RegularEmployeeUpdate extends Component
 {
+    public $employeeId;
+
     public $last_name;
     public $first_name;
     public $middle_initial;
@@ -28,17 +30,40 @@ class RegularEmployeeForm extends Component
     public $positionOptions = [];
     public $salaryGradeOptions = [];
 
-    public function mount()
+    public function mount($id)
     {
+        $this->employeeId = $id;
+
         $this->officeOptions = Office::orderBy('office')->get();
         $this->positionOptions = Position::orderBy('name')->get();
-
-
         $this->salaryGradeOptions = Salary::orderBy('salary_grade')
-        ->pluck('salary_grade')
-        ->unique()
-        ->values()
-        ->toArray();
+            ->pluck('salary_grade')
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $this->loadEmployee();
+    }
+
+    protected function loadEmployee()
+    {
+        $emp = Employee::findOrFail($this->employeeId);
+
+        $this->last_name = $emp->last_name;
+        $this->first_name = $emp->first_name;
+        $this->middle_initial = $emp->middle_initial;
+        $this->suffix = $emp->suffix;
+        $this->gender = $emp->gender;
+        $this->sl_code = $emp->sl_code;
+        $this->office = $emp->office;
+        $this->position = $emp->position;
+        $this->item_no = $emp->item_no;
+        $this->appointed_date = $emp->appointed_date;
+        $this->salary_grade = $emp->salary_grade;
+        $this->step = $emp->step;
+
+        // compute monthly_rate & gross from salary table
+        $this->updateMonthlyRateAndGross();
     }
 
     public function updatedSalaryGrade()
@@ -66,7 +91,6 @@ class RegularEmployeeForm extends Component
         }
 
         $salary = Salary::where('salary_grade', $this->salary_grade)->first();
-
         if (!$salary) {
             $this->monthly_rate = null;
             $this->gross = null;
@@ -83,7 +107,7 @@ class RegularEmployeeForm extends Component
         }
     }
 
-    public function save()
+    public function update()
     {
         $validatedData = $this->validate([
             'last_name'       => 'required|string|max:100',
@@ -97,22 +121,23 @@ class RegularEmployeeForm extends Component
             'gross'           => 'required|numeric',
             'sl_code'         => 'required|string|max:50',
             'item_no'         => 'required|string|max:50',
-            'appointed_date'  => 'required|string',
+            'appointed_date'  => 'required|date',
             'salary_grade'    => 'required|integer|min:1',
             'step'            => 'required|integer|between:1,8',
         ], [
             '*.required' => 'This field is required.',
         ]);
 
-        Employee::create($validatedData);
+        $employee = Employee::findOrFail($this->employeeId);
+        $employee->update($validatedData);
 
-        $this->dispatch('success', message: 'Employee added.');
-        $this->reset();
-        $this->mount();
+        $this->dispatch('success', message: 'Employee updated.');
+        // Optionally redirect or reset state
+        // return redirect()->route('regular-employee');
     }
 
     public function render()
     {
-        return view('livewire.regular-employee-form');
+        return view('livewire.regular-employee-update');
     }
 }

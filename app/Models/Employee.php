@@ -18,6 +18,10 @@ class Employee extends Model
         'gross',
         'gender',
         'sl_code',
+        'item_no',
+        'appointed_date',
+        'salary_grade',
+        'step',
     ];
 
     public function contribution()

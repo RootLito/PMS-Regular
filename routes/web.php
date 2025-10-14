@@ -36,9 +36,14 @@ Route::middleware('auth')->group(function () {
         return view('regular.regular-new-emp');
     })->name('employee.new');
 
+
+
     Route::get('/regular-employee/update/{id}', function ($id) {
-        return view('regular.employee.update-emp', ['id' => $id]);
-    })->name('employee.update');
+        return view('regular.regular-employee-update', ['id' => $id]);
+    })->name('regular-employee.update');
+
+
+
 
     Route::get('/regular-payroll', function () {
         return view('regular.regular-payroll');
@@ -97,7 +102,7 @@ Route::middleware('auth')->group(function () {
     })->name('position');
 
     Route::get('/regular-configuration/credits', function () {
-        return view('regular.credits-config'); 
+        return view('regular.credits-config');
     })->name('credits');
 
     Route::get('/regular-configuration/account', function () {
