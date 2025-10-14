@@ -30,7 +30,7 @@ class RegularEmployeeForm extends Component
 
     public function mount()
     {
-        $this->officeOptions = Office::orderBy('office')->get();
+        $this->officeOptions = Office::orderBy('order_no')->get();
         $this->positionOptions = Position::orderBy('name')->get();
 
 

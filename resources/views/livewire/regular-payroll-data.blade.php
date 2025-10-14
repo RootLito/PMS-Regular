@@ -2,51 +2,53 @@
     <div class="w-full flex justify-between items-center mb-6 p-6 bg-white rounded-xl">
         <h2 class="font-black text-gray-700">PAYROLL SUMMARY</h2>
         <div class="flex text-sm gap-2">
-            <div class="w-150  relative rounded border border-gray-200 shadow-sm cursor-pointer">
-                <div class="truncate h-10 flex items-center px-4 cursor-pointer" wire:click="toggleDesignations">
-                    {{-- @if (count($designation))
-                    {{ implode(', ', $designation) }}
+            {{-- Office Selection Dropdown --}}
+            <div class="w-150 relative rounded border border-gray-200 shadow-sm cursor-pointer">
+                <div class="truncate h-10 flex items-center px-4 cursor-pointer" wire:click="toggleOffices">
+                    @if (!empty($office))
+                    {{ implode(', ', $office) }}
                     @else
-                    All Designations
-                    @endif --}}
+                    All Offices
+                    @endif
                 </div>
-                {{-- @if ($showDesignations)
+
+                @if ($showOffices)
                 <div
                     class="w-full absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow p-2 z-10 max-h-60 overflow-y-auto">
                     <div class="w-full flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
-                        <p class="text-gray-600 text-xs">Select Designation(s)</p>
+                        <p class="text-gray-600 text-xs">Select Office(s)</p>
                         <button wire:click="proceed"
-                            class="bg-blue-700 text-white font-semibold px-2 py-1 rounded cursor-pointer hover:bg-blue-600 text-xs">Proceed</button>
+                            class="bg-blue-700 text-white font-semibold px-2 py-1 rounded hover:bg-blue-600 text-xs">
+                            Proceed
+                        </button>
                     </div>
-                    @foreach ($designations as $desig)
+
+                    @foreach ($officeOptions as $officeName)
                     <label class="block text-sm cursor-pointer">
-                        <input type="checkbox" value="{{ $desig }}" wire:model="designation"
-                            class=" cursor-pointer mr-2">
-                        {{ $desig }}
+                        <input type="checkbox" value="{{ $officeName }}" wire:model="office" class="mr-2">
+                        {{ $officeName }}
                     </label>
                     @endforeach
                 </div>
-                @endif --}}
+                @endif
             </div>
-            <select wire:model.live="cutoff" class="px-2 py-1 rounded border border-gray-200 shadow-sm cursor-pointer">
-                <option value="" disabled>Select Cutoff</option>
-                <option value="1-15">1st Cutoff (1-15)</option>
-                <option value="16-31">2nd Cutoff (16-31)</option>
-            </select>
-            <select wire:model.live="month" class="py-1 border border-gray-200 shadow-sm rounded-md px-2 bg-white ">
+
+            {{-- Month Dropdown --}}
+            <select wire:model.live="month" class="py-1 border border-gray-200 shadow-sm rounded-md px-2 bg-white">
                 <option value="" disabled>Select Month</option>
-                {{-- @foreach ($months as $num => $name)
-                <option value="{{ $num }}" {{ $month==$num ? 'selected' : '' }}>{{ $name }}
-                </option>
-                @endforeach --}}
+                @foreach ($months as $num => $name)
+                <option value="{{ $num }}">{{ $name }}</option>
+                @endforeach
             </select>
+
+            {{-- Year Dropdown --}}
             <select wire:model.live="year" class="py-1 border border-gray-200 shadow-sm rounded-md px-2 bg-white">
                 <option value="" disabled>Select Year</option>
-                {{-- @foreach ($years as $yearOption)
-                <option value="{{ $yearOption }}" {{ $year==$yearOption ? 'selected' : '' }}>{{ $yearOption }}
-                </option>
-                @endforeach --}}
+                @foreach ($years as $yearOption)
+                <option value="{{ $yearOption }}">{{ $yearOption }}</option>
+                @endforeach
             </select>
+
 
 
             <button wire:click.prevent=""
@@ -91,42 +93,41 @@
                     <img src="{{ asset('images/gad.png') }}" alt="GAD" class="object-contain w-full h-full">
                 </div>
             </div>
-            <p class="text-xs font-bold">CONTRACT OF SERVICES / JOB ORDER</p>
-            {{-- <h2 class="font-bold">{{ $dateRange }}</h2> --}}
-            <h2 class="font-bold">Date Rage</h2>
+            <p class="text-xs font-bold">BFAR-REGIONAL OFFICE</p>
+            <p class="text-xs font-bold uppercase mb-4">PERIOD COVERED: {{ $months[$month] ?? '' }} 1-30, {{ $year ?? '' }}</p>
             <table class="table-auto border-collapse w-full text-xs"
                 style="font-size: 10px; font-family: 'Arial Narrow';">
 
                 <thead>
                     <tr>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="4">NAME OF EMPLOYEE/<br>POSITION</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="4" class="bg-blue-100">MONTHLY
+                        <th class="border border-gray-300 px-2 py-1" rowspan="4">NAME OF EMPLOYEE/<br>POSITION</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="4" class="bg-blue-100">MONTHLY
                             SALARY<br>OTHER INCOME<br>AMOUNT</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="4">EARNED<br>FOR<br>PERIOD</th>
-                        <th class="border border-gray-400 px-1 py-1" colspan="6">DEDUCTIONS</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="4">DEDUCTIONS</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="4">NET PAY</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="2" colspan="2">NET DUE</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="4">EARNED<br>FOR<br>PERIOD</th>
+                        <th class="border border-gray-300 px-2 py-1" colspan="6">DEDUCTIONS</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="4">DEDUCTIONS</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="4">NET PAY</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="2" colspan="2">NET DUE</th>
                     </tr>
                     <tr>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="3">W/TAX</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="3">PHIC</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="3">GSIS LIFE &</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="3"> P'IBIG 1 & 2</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="1" colspan="2">OTHERS</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="3">W/TAX</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="3">PHIC</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="3">GSIS LIFE &</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="3"> P'IBIG 1 & 2</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="1" colspan="2">OTHERS</th>
                     </tr>
                     <tr>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="2">CODE</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="2">AMOUNT</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="2">1ST</th>
-                        <th class="border border-gray-400 px-1 py-1" rowspan="2">2ND</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="2">CODE</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="2">AMOUNT</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="2">1ST</th>
+                        <th class="border border-gray-300 px-2 py-1" rowspan="2">2ND</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     @foreach ($employeesByOffice as $office => $employees)
                     <tr>
-                        <td colspan="13" class="bg-gray-100 font-bold">{{ $office }}</td>
+                        <td colspan="13" class="bg-green-200 font-bold border border-gray-300 p-1">{{ $office }}</td>
                     </tr>
 
                     @foreach ($employees as $employee)
@@ -134,73 +135,157 @@
                     $c = $employee->contribution;
                     @endphp
                     <tr>
-                        <td class="border px-1 py-1">
+                        <td class="border border-gray-300 px-2 py-1">
                             {{ $employee->first_name }} {{ $employee->last_name }}<br>
                             <span class="italic text-gray-600">{{ $employee->position }}</span>
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($employee->monthly_rate, 2) }}
+                        <td class="border border-gray-300 px-2 py-1">
+                            <div class="flex flex-col">
+                                <span>{{ number_format($employee->monthly_rate, 2) }}</span>
+                                <span>2,000.00</span>
+                            </div>
+
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($c->total_salary ?? 0, 2) }}
+                        <td class="border border-gray-300 px-2 py-1">
+                            {{ number_format(($employee->monthly_rate ?? 0) + 2000, 2) }}
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($c->tax ?? 0, 2) }}
+                        <td class="border border-gray-300 px-2 py-1">
+                            {{ ($c->tax ?? 0) != 0 ? number_format($c->tax, 2) : '-' }}
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($c->phic ?? 0, 2) }}
+                        <td class="border border-gray-300 px-2 py-1">
+                            {{ ($c->phic ?? 0) != 0 ? number_format($c->phic, 2) : '-' }}
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($c->gsis_ps ?? 0, 2) }}
+                        <td class="border border-gray-300 px-2 py-1">
+                            {{ ($c->gsis_ps ?? 0) != 0 ? number_format($c->gsis_ps, 2) : '-' }}
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format(($c->hdmf_ps ?? 0) + ($c->hdmf_mp2 ?? 0), 2) }}
+
+                        <td class="border border-gray-300 px-2 py-1">
+                            <div class="flex flex-col">
+                                <span>{{ ($c->hdmf_ps ?? null) ? number_format($c->hdmf_ps, 2) : '' }}</span>
+                                <span>{{ ($c->hdmf_mp2 ?? null) ? number_format($c->hdmf_mp2, 2) : '' }}</span>
+                            </div>
                         </td>
 
-                        <td class="border px-1 py-1 text-center">
+
+
+                        @php
+                        $fieldsToCheck = [
+                        'hdmf_mpl', 'hdmf_hl', 'gsis_pol', 'gsis_consoloan', 'gsis_emer', 'gsis_cpl', 'gsis_gfal',
+                        'g_mpl', 'g_lite', 'bfar_provident', 'dareco', 'ucpb_savings', 'isda_savings_loan',
+                        'isda_savings_cap_con', 'tagumcoop_sl', 'tagum_coop_cl', 'tagum_coop_sc', 'tagum_coop_rs',
+                        'tagum_coop_ers_gasaka_suretech_etc', 'nd', 'lbp_sl'
+                        ];
+
+                        $fieldsWithValues = collect($fieldsToCheck)->filter(function ($field) use ($c) {
+                        return !empty($c?->$field) && $c->$field != 0;
+                        });
+                        @endphp
+
+                        {{-- Description column --}}
+                        <td class="border border-gray-300 px-2 py-1 text-center">
+                            <div class="flex flex-col text-left">
+                                @foreach ($fieldsWithValues as $field)
+                                <span>{{ strtoupper(str_replace('_', ' ', $field)) }}</span>
+                                @endforeach
+                            </div>
+                        </td>
+                        {{-- Values column --}}
+                        <td class="border border-gray-300 px-2 py-1 text-right">
+                            <div class="flex flex-col">
+                                @foreach ($fieldsWithValues as $field)
+                                <span>{{ number_format($c->$field, 2) }}</span>
+                                @endforeach
+                            </div>
+                        </td>
+
+
+                        <td class="border border-gray-300 px-2 py-1 text-right">
                             @php
-                            $knownKeys = ['tax', 'phic', 'gsis_ps', 'hdmf_ps', 'hdmf_mp2', 'total_salary',
-                            'total_charges', 'gross', 'rate_per_month', 'pera', 'leave_wo'];
-                            $others = collect($c?->toArray() ?? [])->filter(function($v, $k) use ($knownKeys) {
-                            return !in_array($k, $knownKeys) && $v != 0 && $v !== null;
-                            });
-                            $firstOther = $others->keys()->first();
+                            $total =
+                            ($c->tax ?? 0) +
+                            ($c->phic ?? 0) +
+                            ($c->gsis_ps ?? 0) +
+                            ($c->hdmf_ps ?? 0) +
+                            ($c->hdmf_mp2 ?? 0) +
+                            ($c->hdmf_mpl ?? 0) +
+                            ($c->hdmf_hl ?? 0) +
+                            ($c->gsis_pol ?? 0) +
+                            ($c->gsis_consoloan ?? 0) +
+                            ($c->gsis_emer ?? 0) +
+                            ($c->gsis_cpl ?? 0) +
+                            ($c->gsis_gfal ?? 0) +
+                            ($c->g_mpl ?? 0) +
+                            ($c->g_lite ?? 0) +
+                            ($c->bfar_provident ?? 0) +
+                            ($c->dareco ?? 0) +
+                            ($c->ucpb_savings ?? 0) +
+                            ($c->isda_savings_loan ?? 0) +
+                            ($c->isda_savings_cap_con ?? 0) +
+                            ($c->tagumcoop_sl ?? 0) +
+                            ($c->tagum_coop_cl ?? 0) +
+                            ($c->tagum_coop_sc ?? 0) +
+                            ($c->tagum_coop_rs ?? 0) +
+                            ($c->tagum_coop_ers_gasaka_suretech_etc ?? 0) +
+                            ($c->nd ?? 0) +
+                            ($c->lbp_sl ?? 0);
                             @endphp
-                            {{ strtoupper(str_replace('_', ' ', $firstOther ?? '')) }}
+                            {{ ($total ?? 0) != 0 ? number_format($total, 2) : '-' }}
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($others->first() ?? 0, 2) }}
-                        </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($c->total_charges ?? 0, 2) }}
-                        </td>
-
-                        <td class="border px-1 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right">
                             @php
-                            $netPay = ($c->total_salary ?? 0) - ($c->total_charges ?? 0);
+                            $monthlyRate = $employee->monthly_rate ?? 0;
+                            $adjustedRate = $monthlyRate + 2000;
+                            $total =
+                            ($c->tax ?? 0) +
+                            ($c->phic ?? 0) +
+                            ($c->gsis_ps ?? 0) +
+                            ($c->hdmf_ps ?? 0) +
+                            ($c->hdmf_mp2 ?? 0) +
+                            ($c->hdmf_mpl ?? 0) +
+                            ($c->hdmf_hl ?? 0) +
+                            ($c->gsis_pol ?? 0) +
+                            ($c->gsis_consoloan ?? 0) +
+                            ($c->gsis_emer ?? 0) +
+                            ($c->gsis_cpl ?? 0) +
+                            ($c->gsis_gfal ?? 0) +
+                            ($c->g_mpl ?? 0) +
+                            ($c->g_lite ?? 0) +
+                            ($c->bfar_provident ?? 0) +
+                            ($c->dareco ?? 0) +
+                            ($c->ucpb_savings ?? 0) +
+                            ($c->isda_savings_loan ?? 0) +
+                            ($c->isda_savings_cap_con ?? 0) +
+                            ($c->tagumcoop_sl ?? 0) +
+                            ($c->tagum_coop_cl ?? 0) +
+                            ($c->tagum_coop_sc ?? 0) +
+                            ($c->tagum_coop_rs ?? 0) +
+                            ($c->tagum_coop_ers_gasaka_suretech_etc ?? 0) +
+                            ($c->nd ?? 0) +
+                            ($c->lbp_sl ?? 0);
+                            $netPay = $adjustedRate - $total;
                             @endphp
-                            ₱{{ number_format($netPay, 2) }}
+                            {{ ($netPay ?? 0) != 0 ? number_format($netPay, 2) : '-' }}
                         </td>
 
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($netPay / 2, 2) }}
+
+                        <td class="border border-gray-300 px-2 py-1 text-right">
+                            {{ number_format($netPay / 2, 2) }}
                         </td>
-                        <td class="border px-1 py-1 text-right">
-                            ₱{{ number_format($netPay / 2, 2) }}
+                        <td class="border border-gray-300 px-2 py-1 text-right">
+                            {{ number_format($netPay / 2, 2) }}
                         </td>
                     </tr>
                     @endforeach
                     @endforeach
                 </tbody>
-
             </table>
         </div>
     </div>
