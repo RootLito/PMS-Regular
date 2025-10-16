@@ -31,7 +31,7 @@
                     {{-- <th class="px-4 py-2 text-nowrap">Gross</th> --}}
                     <th class="px-4 py-2 text-nowrap">Vacation Leave</th>
                     <th class="px-4 py-2 text-nowrap">Sick Leave</th>
-                    <th class="px-4 py-2 text-nowrap">Action</th>
+                    <th class="px-4 py-2 text-nowrap" width="10%">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,7 +67,7 @@
                                 </button>
                             @else
                                 <a href="{{ url('/regular-credits/update', ['id' => $employee->id]) }}"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded flex items-center gap-1 cursor-pointer"
+                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded flex justify-center items-center gap-1 cursor-pointer w-full"
                                     title="Edit">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>

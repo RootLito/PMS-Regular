@@ -24,7 +24,8 @@ class RegularContributionData extends Component
         $gsis_emer, $gsis_cpl, $gsis_gfal, $g_mpl, $g_lite, $bfar_provident, $dareco, $ucpb_savings,
         $isda_savings_loan, $isda_savings_cap_con, $tagumcoop_sl, $tagum_coop_cl, $tagum_coop_sc,
         $tagum_coop_rs, $tagum_coop_ers_gasaka_suretech_etc, $nd, $lbp_sl, $total_charges,
-        $total_salary, $pera, $gross, $rate_per_month, $leave_wo;
+        $total_salary, $gross, $rate_per_month, $leave_wo;
+    public $pera = 2000;
 
     protected $rules = [
         'tax' => 'nullable|numeric',
@@ -102,7 +103,11 @@ class RegularContributionData extends Component
             $this->lbp_sl = $contribution->lbp_sl;
             $this->total_charges = $contribution->total_charges;
             $this->total_salary = $contribution->total_salary;
-            $this->pera = $contribution->pera;
+            // $this->pera = $contribution->pera;
+            if (!is_null($contribution->pera) && $contribution->pera != 0) {
+                $this->pera = $contribution->pera;
+            }
+
             $this->gross = $contribution->gross;
             $this->rate_per_month = $contribution->rate_per_month;
             $this->leave_wo = $contribution->leave_wo;
