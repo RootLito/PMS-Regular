@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Assigned extends Model
+class Assign extends Model
 {
+    protected $table = 'assign';
      protected $fillable = [
         'prapared_by',
         'noted_by',

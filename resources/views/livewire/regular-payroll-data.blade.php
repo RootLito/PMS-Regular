@@ -54,7 +54,7 @@
             <button wire:click.prevent=""
                 class="bg-green-700 text-white font-semibold px-4 py-1 rounded cursor-pointer hover:bg-green-600"><i
                     class="fa-solid fa-floppy-disk mr-1"></i> Save to Archive</button>
-            <button wire:click.prevent=""
+            <button wire:click.prevent="exportPayroll"
                 class="bg-slate-700 text-white font-semibold px-4 py-1 rounded cursor-pointer hover:bg-slate-600">
                 <i class="fa-regular fa-file-excel mr-1"></i>Export to Excel</button>
 
@@ -291,39 +291,46 @@
                     @endforeach
                     @endforeach
                 </tbody> --}}
+
                 <tbody>
                     @foreach ($employeesByOffice as $office => $employees)
                     <tr>
-                        <td colspan="13" class="font-bold border bg-slate-700 text-white p-1">{{ $office }}</td>
+                        <td colspan="13" class="font-bold border-s border-e border-gray-300 p-1"
+                            style="background: #b4c6e7">{{ $office }}</td>
                     </tr>
                     @foreach ($employees as $employee)
                     @php
                     $c = $employee->contribution;
                     @endphp
                     <tr>
-                        <td class="border border-gray-300 px-2 py-1">
+                        <td class="border border-gray-300 px-2 py-1 align-top">
                             {{ $employee->first_name }} {{ $employee->last_name }}<br>
                             <span class="italic text-gray-600">{{ $employee->position }}</span>
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             <div class="flex flex-col">
                                 <span>{{ number_format($employee->monthly_rate, 2) }}</span>
-                                <span>2,000.00</span>
+                                <span>
+                                    {{ ($c->pera ?? 0) != 0 ? number_format($c->pera, 2) : '' }}
+                                </span>
                             </div>
                         </td>
-                        <td class="border border-gray-300 px-2 py-1">
-                            {{ number_format(($employee->monthly_rate ?? 0) + 2000, 2) }}
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
+                            {{ (($employee->monthly_rate ?? 0) + ($employee->contribution->pera ?? 0)) == 0
+                            ? '-'
+                            : number_format(($employee->monthly_rate ?? 0) + ($employee->contribution->pera ?? 0), 2)
+                            }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             {{ ($c->tax ?? 0) != 0 ? number_format($c->tax, 2) : '-' }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             {{ ($c->phic ?? 0) != 0 ? number_format($c->phic, 2) : '-' }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             {{ ($c->gsis_ps ?? 0) != 0 ? number_format($c->gsis_ps, 2) : '-' }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             <div class="flex flex-col">
                                 <span>{{ ($c->hdmf_ps ?? null) ? number_format($c->hdmf_ps, 2) : '' }}</span>
                                 <span>{{ ($c->hdmf_mp2 ?? null) ? number_format($c->hdmf_mp2, 2) : '' }}</span>
@@ -341,20 +348,20 @@
                         });
                         @endphp
                         <td class="border border-gray-300 px-2 py-1 text-center">
-                            <div class="flex flex-col text-left">
+                            <div class="flex flex-col text-left align-top">
                                 @foreach ($fieldsWithValues as $field)
                                 <span>{{ strtoupper(str_replace('_', ' ', $field)) }}</span>
                                 @endforeach
                             </div>
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             <div class="flex flex-col">
                                 @foreach ($fieldsWithValues as $field)
                                 <span>{{ number_format($c->$field, 2) }}</span>
                                 @endforeach
                             </div>
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             @php
                             $total = collect($fieldsToCheck)->sum(fn($field) => $c->$field ?? 0)
                             + ($c->tax ?? 0)
@@ -365,7 +372,7 @@
                             @endphp
                             {{ ($total ?? 0) != 0 ? number_format($total, 2) : '-' }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             @php
                             $monthlyRate = $employee->monthly_rate ?? 0;
                             $adjustedRate = $monthlyRate + 2000;
@@ -373,91 +380,110 @@
                             @endphp
                             {{ ($netPay ?? 0) != 0 ? number_format($netPay, 2) : '-' }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             {{ number_format($netPay / 2, 2) }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             {{ number_format($netPay / 2, 2) }}
                         </td>
                     </tr>
                     @endforeach
 
-                    {{-- TOTAL ROWS FOR THIS OFFICE --}}
-                    {{-- @php
-                    $totals = $totalsByOffice[$office] ?? [];
-                    $totalSalary = $totals['monthly_rate'] ?? 0;
-                    $totalPera = $totals['pera'] ?? 0;
-                    $totalUacs = $totalSalary + $totalPera;
-                    @endphp --}}
-
                     <tr>
-                        <td class="border border-gray-300 px-2 py-1 text-left">TOTAL SALARY:</td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class="border-s border-b border-gray-300 px-2 py-1 text-left">TOTAL SALARY:</td>
+                        <td class="border-s border-b border-gray-300 px-2 py-1 text-right">
                             {{ number_format($totalsByOffice[$office]['monthly_rate'] ?? 0, 2) }}
                         </td>
-                        <td colspan="11" class="border border-gray-300 px-2 py-1"></td>
+                        <td colspan="11" class="border-e border-b border-gray-300 px-2 py-1"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-gray-300 px-2 py-1 text-left">OTHER IN CODE TOTAL (PERA):</td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['pera'] ?? 0, 2) }}
+                        <td class="border-s border-gray-300 px-2 py-1 text-left">OTHER IN CODE TOTAL (PERA):</td>
+                        <td class="border-s border-gray-300 px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['pera'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['pera'], 2) }}
                         </td>
-                        <td colspan="11" class="border border-gray-300 px-2 py-1"></td>
+                        <td colspan="11" class="border-e border-gray-300 px-2 py-1"></td>
                     </tr>
 
-                    <tr class="font-bold">
-                        <td class="border border-gray-300 px-2 py-1 text-left">TOTAL UACS 14.1002:</td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                    <tr class="font-bold border-s border-e border-gray-300" style="background: #c6e1b4;">
+                        <td class=" px-2 py-1 text-left">TOTAL UACS 14.1002:</td>
+                        <td class=" px-2 py-1 text-right">
                             {{ number_format($totalsByOffice[$office]['uacs'] ?? 0, 2) }}
                         </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            earn period
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['tax'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['phic'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['gsis_ps'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format(($totalsByOffice[$office]['hdmf_ps'] ?? 0) +
-                            ($totalsByOffice[$office]['hdmf_mp2'] ?? 0), 2) }}
-                        </td>
-
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            
-                        </td>
-
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['totalOthers'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['totalDeductions'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['net_pay'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['tax'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['tax'] ?? 0, 2) }}
-                        </td>
-                        {{-- <td colspan="6" class="border border-gray-300 px-2 py-1"></td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
-                            {{ number_format($totalsByOffice[$office]['pera'] ?? 0, 2) }}
-                        </td>
-                        <td class="border border-gray-300 px-2 py-1 text-right">
+                        <td class=" px-2 py-1 text-right">
                             {{ number_format($totalsByOffice[$office]['uacs'] ?? 0, 2) }}
-                        </td> --}}
-                        {{-- <td colspan="2" class="border border-gray-300 px-2 py-1"></td> --}}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['tax'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['tax'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['phic'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['phic'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['gsis_ps'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['gsis_ps'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            @php
+                            $hdmf_total = ($totalsByOffice[$office]['hdmf_ps'] ?? 0) +
+                            ($totalsByOffice[$office]['hdmf_mp2'] ?? 0);
+                            @endphp
+                            {{ $hdmf_total == 0 ? '-' : number_format($hdmf_total, 2) }}
+                        </td>
+
+
+                        <td class=" px-2 py-1 text-right">
+
+                        </td>
+
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['totalOthers'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['totalOthers'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['totalDeductions'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['totalDeductions'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['net_pay'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['net_pay'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['first'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['first'], 2) }}
+                        </td>
+                        <td class=" px-2 py-1 text-right">
+                            {{ ($totalsByOffice[$office]['second'] ?? 0) == 0 ? '-' :
+                            number_format($totalsByOffice[$office]['second'], 2) }}
+                        </td>
                     </tr>
 
                     @endforeach
+                    <tr class="">
+                        <td class="border-l border-gray-300 px-2 py-1">GRAND TOTAL SALARY</td>
+                        {{-- <td class="px-2 py-1 text-right">{{ number_format($grandTotalSalary, 2) }}</td> --}}
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['grandTotalSalary'], 2) }}</td>
+                        <td colspan="11" class="border-r border-gray-300 "></td>
+                    </tr>
+                    <tr class="">
+                        <td class="border-l border-gray-300 px-2 py-1">OTHER IN CODE TOTAL</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['otherTotal'], 2) }}</td>
+                        <td colspan="11" class="border-r border-gray-300 "></td>
+                    </tr>
+                    <tr style="background-color: #f5b084; font-weight: bold;">
+                        <td class="border-l border-gray-300 px-2 py-1">GRAND TOTAL</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['grandTotal'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['grandTotal'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['tax'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['phic'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['gsis_ps'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['hdmf_ps'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['hdmf_mp2'], 2) }}</td>
+                        <td colspan="5" class="border-r border-gray-300  "></td>
+                    </tr>
                 </tbody>
             </table>
         </div>

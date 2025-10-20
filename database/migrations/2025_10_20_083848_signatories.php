@@ -11,7 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::create('signatories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('designation');
+            $table->string('role')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -19,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('signatories');
     }
 };
