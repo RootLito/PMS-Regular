@@ -13,25 +13,34 @@ class Signatories extends Component
 
     public $name;
     public $designation;
+
     public $prapared_by = '';
-    public $noted_by = '';
-    public $funds_availability = '';
-    public $approved_by = '';
+    public $checked_by = '';
+    public $certified_by = '';
+    public $funds_available = '';
+    public $approved_payment = '';
+    
     public $allSignatories;
     public $assigned;
+
     public $editingId = null;
     public $deletingId = null;
+
     public $editName = '';
     public $editDesignation = '';
+
     public function mount()
     {
         $this->allSignatories = Signatory::latest()->get();
-        $this->assigned = Assign::with(['prepared', 'noted', 'funds', 'approved'])->latest()->first();
+        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved'])
+            ->latest()->first(); 
     }
+
     protected $rules = [
         'name' => 'required|string|min:5|max:255',
         'designation' => 'required|string|min:5|max:255',
     ];
+
     public function save()
     {
         $this->validate();
@@ -44,8 +53,9 @@ class Signatories extends Component
         $this->dispatch('success', message: 'Signatory added!');
         $this->reset(['name', 'designation']);
         $this->resetPage();
-        $this->allSignatories = Signatory::latest()->get();
+        $this->allSignatories = Signatory::latest()->get(); 
     }
+
     public function startEdit($id)
     {
         $signatory = Signatory::findOrFail($id);
@@ -53,11 +63,13 @@ class Signatories extends Component
         $this->editName = $signatory->name;
         $this->editDesignation = $signatory->designation;
     }
+
     public function cancelEdit()
     {
         $this->editingId = null;
         $this->reset(['editName', 'editDesignation']);
     }
+
     public function updateSignatory()
     {
         $this->validate([
@@ -74,18 +86,20 @@ class Signatories extends Component
         $this->editingId = null;
         $this->reset(['editName', 'editDesignation']);
         $this->dispatch('success', message: 'Signatory updated!');
-
         $this->allSignatories = Signatory::latest()->get();
         $this->resetPage();
     }
+
     public function confirmDelete($id)
     {
         $this->deletingId = $id;
     }
+
     public function cancelDelete()
     {
         $this->deletingId = null;
     }
+
     public function deleteSignatoryConfirmed()
     {
         Signatory::findOrFail($this->deletingId)->delete();
@@ -93,36 +107,46 @@ class Signatories extends Component
         $this->deletingId = null;
         $this->allSignatories = Signatory::latest()->get();
         $this->resetPage();
+
         if ($this->editingId === $this->deletingId) {
             $this->cancelEdit();
         }
     }
+
     public function saveSignatory()
     {
         $this->validate([
-            'prapared_by' => 'required|string',
-            'noted_by' => 'required|string',
-            'funds_availability' => 'required|string',
-            'approved_by' => 'required|string',
+            'prapared_by' => 'required|exists:signatories,id', 
+            'checked_by' => 'required|exists:signatories,id', 
+            'certified_by' => 'required|exists:signatories,id', 
+            'funds_available' => 'required|exists:signatories,id', 
+            'approved_payment' => 'required|exists:signatories,id', 
         ]);
+
         Assign::create([
             'prapared_by' => $this->prapared_by,
-            'noted_by' => $this->noted_by,
-            'funds_availability' => $this->funds_availability,
-            'approved_by' => $this->approved_by,
+            'checked_by' => $this->checked_by,
+            'certified_by' => $this->certified_by,
+            'funds_available' => $this->funds_available,
+            'approved_payment' => $this->approved_payment,
         ]);
+
         $this->dispatch('success', message: 'New signatory assigned!');
-        $this->assigned = Assign::with(['prepared', 'noted', 'funds', 'approved'])->latest()->first();
+        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved'])
+            ->latest()->first();
+
         $this->reset([
             'prapared_by',
-            'noted_by',
-            'funds_availability',
-            'approved_by',
+            'checked_by',
+            'certified_by',
+            'funds_available',
+            'approved_payment',
         ]);
     }
+
     public function render()
     {
-        $signatories = Signatory::latest()->paginate(5);
+        $signatories = Signatory::latest()->paginate(6);
 
         return view('livewire.signatories', [
             'signatories' => $signatories,

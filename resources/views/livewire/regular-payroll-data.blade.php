@@ -330,12 +330,24 @@
                         <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             {{ ($c->gsis_ps ?? 0) != 0 ? number_format($c->gsis_ps, 2) : '-' }}
                         </td>
+                        @php
+                        $hasHDMF = (!empty($c->hdmf_ps) && $c->hdmf_ps != 0) || (!empty($c->hdmf_mp2) && $c->hdmf_mp2 !=
+                        0);
+                        @endphp
+
                         <td class="border border-gray-300 px-2 py-1 text-right align-top">
+                            @if (!$hasHDMF)
+                            <span>-</span>
+                            @else
                             <div class="flex flex-col">
-                                <span>{{ ($c->hdmf_ps ?? null) ? number_format($c->hdmf_ps, 2) : '' }}</span>
-                                <span>{{ ($c->hdmf_mp2 ?? null) ? number_format($c->hdmf_mp2, 2) : '' }}</span>
+                                <span>{{ (!empty($c->hdmf_ps) && $c->hdmf_ps != 0) ? number_format($c->hdmf_ps, 2) : ''
+                                    }}</span>
+                                <span>{{ (!empty($c->hdmf_mp2) && $c->hdmf_mp2 != 0) ? number_format($c->hdmf_mp2, 2) :
+                                    '' }}</span>
                             </div>
+                            @endif
                         </td>
+
                         @php
                         $fieldsToCheck = [
                         'hdmf_mpl', 'hdmf_hl', 'gsis_pol', 'gsis_consoloan', 'gsis_emer', 'gsis_cpl', 'gsis_gfal',
@@ -347,20 +359,31 @@
                         return !empty($c?->$field) && $c->$field != 0;
                         });
                         @endphp
-                        <td class="border border-gray-300 px-2 py-1 text-center">
+
+                        <td class="border border-gray-300 px-2 py-1 align-top">
+                            @if ($fieldsWithValues->isEmpty())
+                            <span>-</span>
+                            @else
                             <div class="flex flex-col text-left align-top">
                                 @foreach ($fieldsWithValues as $field)
                                 <span>{{ strtoupper(str_replace('_', ' ', $field)) }}</span>
                                 @endforeach
                             </div>
+                            @endif
                         </td>
+
                         <td class="border border-gray-300 px-2 py-1 text-right align-top">
+                            @if ($fieldsWithValues->isEmpty())
+                            <span>-</span>
+                            @else
                             <div class="flex flex-col">
                                 @foreach ($fieldsWithValues as $field)
                                 <span>{{ number_format($c->$field, 2) }}</span>
                                 @endforeach
                             </div>
+                            @endif
                         </td>
+
                         <td class="border border-gray-300 px-2 py-1 text-right align-top">
                             @php
                             $total = collect($fieldsToCheck)->sum(fn($field) => $c->$field ?? 0)
@@ -475,14 +498,65 @@
                     </tr>
                     <tr style="background-color: #f5b084; font-weight: bold;">
                         <td class="border-l border-gray-300 px-2 py-1">GRAND TOTAL</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['grandTotal'], 2) }}</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['grandTotal'], 2) }}</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['tax'], 2) }}</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['phic'], 2) }}</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['gsis_ps'], 2) }}</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['hdmf_ps'], 2) }}</td>
-                        <td class="px-2 py-1 text-right">{{ number_format($overallTotal['hdmf_mp2'], 2) }}</td>
-                        <td colspan="5" class="border-r border-gray-300  "></td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['grandTotal'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['grandTotal'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['grandTotal'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['grandTotal'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['tax'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['tax'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['phic'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['phic'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['gsis_ps'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['gsis_ps'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['ps_mp2'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['ps_mp2'], 2) }}</td>
+                        <td></td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['totalOthers'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['totalOthers'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['totalDeduction'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['totalDeduction'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['netPay'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['netPay'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['firstHalf'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['firstHalf'], 2) }}</td>
+                        <td class="px-2 py-1 text-right">{{ ($overallTotal['secondHalf'] ?? 0) == 0 ? '-' :
+                            number_format($overallTotal['secondHalf'], 2) }}</td>
+                    </tr>
+
+                    <tr class="border-x border-gray-300 ">
+                        <td colspan="2" class="px-2 py-1 text-left">Prepared by:</td>
+                        <td colspan="3" class="px-2 py-1 text-left">Checked by:</td>
+                        <td colspan="3" class="px-2 py-1 text-left">Certified/Noted by:</td>
+                        <td colspan="3" class="px-2 py-1 text-left">Funds Available:</td>
+                        <td colspan="2" class="px-2 py-1 text-left">Approved for Payment:</td>
+                    </tr>
+                    <tr class="border-x border-gray-300">
+                        <td class="invisible">space</td>
+                    </tr>
+                    <tr class="border-x border-gray-300">
+                        <td class="invisible">space</td>
+                    </tr>
+
+
+                    {{-- SIGNATORIES --}}
+                    <tr class="border-x border-gray-300 font-bold">
+                        <td colspan="2" class="px-2 text-left">{{ $this->assigned->prepared->name ?? '' }}</td>
+                        <td colspan="3" class="px-2 text-left">{{ $this->assigned->checked->name ?? '' }}</td>
+                        <td colspan="3" class="px-2 text-left">{{ $this->assigned->certified->name ?? '' }}</td>
+                        <td colspan="3" class="px-2 text-left">{{ $this->assigned->funds->name ?? '' }}</td>
+                        <td colspan="2" class="px-2 text-left">{{ $this->assigned->approved->name ?? '' }}</td>
+                    </tr>
+
+                    <tr class="border-x border-b border-gray-300 ">
+                        <td colspan="2" class="px-2 py-1 text-left">{{ $this->assigned->prepared->designation ?? '' }}
+                        </td>
+                        <td colspan="3" class="px-2 py-1 text-left">{{ $this->assigned->checked->designation ?? '' }}
+                        </td>
+                        <td colspan="3" class="px-2 py-1 text-left">{{ $this->assigned->certified->designation ?? '' }}
+                        </td>
+                        <td colspan="3" class="px-2 py-1 text-left">{{ $this->assigned->funds->designation ?? '' }}</td>
+                        <td colspan="2" class="px-2 py-1 text-left">{{ $this->assigned->approved->designation ?? '' }}
+                        </td>
                     </tr>
                 </tbody>
             </table>

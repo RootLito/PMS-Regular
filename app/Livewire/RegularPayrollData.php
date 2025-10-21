@@ -19,15 +19,12 @@ class RegularPayrollData extends Component
     public $officeOptions = [];
     public array $office = [];
     public bool $showOffices = false;
-
     public $month;
     public $year;
     public $months = [];
     public $years = [];
     public $assigned;
-
     public $dateRange;
-
     public function mount()
     {
         $this->officeOptions = Office::orderBy('order_no')->pluck('office', 'office')->values()->all();
@@ -55,10 +52,9 @@ class RegularPayrollData extends Component
 
         $this->office = [];
 
-        $this->assigned = Assign::with(['prepared', 'noted', 'funds', 'approved'])->latest()->first();
+        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved'])->latest()->first();
 
-
-        dd($this->assigned);
+        // dd($this->assigned);
     }
 
     public function toggleOffices()
@@ -106,6 +102,24 @@ class RegularPayrollData extends Component
             })
             ->get();
 
+        $employees->each(function ($employee) {
+            if ($employee->contribution) {
+                $filtered = collect($employee->contribution->toArray())
+                    ->filter(fn($value) => !is_null($value) && $value !== 0 && $value !== '');
+                $employee->filtered_contribution = (object) $filtered;
+            } else {
+                $employee->filtered_contribution = null;
+            }
+        });
+
+        $employeesByOffice = $employees->groupBy(function ($employee) {
+            return $employee->officeDetails->name ?? $employee->office ?? 'Unknown Office';
+        });
+
+
+
+        $totalsByOffice = [];
+
         $otherContributions = [
             'hdmf_mpl',
             'hdmf_hl',
@@ -130,90 +144,39 @@ class RegularPayrollData extends Component
             'lbp_sl'
         ];
 
-        $employees->each(function ($employee) use ($otherContributions) {
-            if ($employee->contribution) {
-                $filtered = collect($employee->contribution->toArray())
-                    ->filter(fn($value) => !is_null($value) && $value !== 0 && $value !== '');
-                $employee->filtered_contribution = (object) $filtered;
+        $commonFields = [
+            'tax',
+            'phic',
+            'gsis_ps',
+            'hdmf_ps',
+            'hdmf_mp2',
+            'total_charges',
+            'total_salary',
+            'pera',
+            'gross',
+            'rate_per_month',
+            'leave_wo'
+        ];
 
-                $totalFive =
-                    ($employee->contribution->tax ?? 0) +
-                    ($employee->contribution->phic ?? 0) +
-                    ($employee->contribution->gsis_ps ?? 0) +
-                    ($employee->contribution->hdmf_ps ?? 0) +
-                    ($employee->contribution->hdmf_mp2 ?? 0);
-
-                $totalOthers = collect($otherContributions)->sum(fn($field) => $employee->contribution->$field ?? 0);
-
-                $employee->contribution->total_deductions = $totalFive + $totalOthers;
-            } else {
-                $employee->filtered_contribution = null;
-                $employee->contribution = (object)['total_deductions' => 0, 'pera' => 0]; // Ensure it's an object to prevent errors
-            }
-        });
-
-
-        $employeesByOffice = $employees->groupBy(function ($employee) {
-            return $employee->officeDetails->name ?? $employee->office ?? 'Unknown Office';
-        });
-
-        $totalsByOffice = [];
-
-
-        foreach ($employeesByOffice as $officeName => $officeEmployees) {
-            $monthlyRateSum = $officeEmployees->sum('monthly_rate');
-            $peraSum = $officeEmployees->sum(fn($e) => $e->contribution->pera ?? 0);
+        foreach ($employeesByOffice as $officeName => $employees) {
+            $monthlyRateSum = $employees->sum('monthly_rate');
+            $peraSum = $employees->sum(fn($e) => $e->contribution->pera ?? 0);
             $totalUacs = $monthlyRateSum + $peraSum;
-
-            $totalOthers = collect($otherContributions)->sum(fn($field) => $officeEmployees->sum(fn($e) => $e->contribution->$field ?? 0));
-
-            $totalFive =
-                $officeEmployees->sum(fn($e) => $e->contribution->tax ?? 0) +
-                $officeEmployees->sum(fn($e) => $e->contribution->phic ?? 0) +
-                $officeEmployees->sum(fn($e) => $e->contribution->gsis_ps ?? 0) +
-                $officeEmployees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0) +
-                $officeEmployees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
-
+            $earnPeriod = ($employee->monthly_rate ?? 0) + ($employee->contribution->pera ?? 0);
+            $totalOthers = collect($otherContributions)->sum(
+                fn($field) => $employees->sum(fn($e) => $e->contribution->$field ?? 0)
+            );
+            $totalFive = collect(['tax', 'phic', 'gsis_ps', 'hdmf_ps', 'hdmf_mp2'])->sum(
+                fn($field) => $employees->sum(fn($e) => $e->contribution->$field ?? 0)
+            );
             $totalDeductions = $totalFive + $totalOthers;
-
-            $ratepera = $monthlyRateSum + $peraSum;
-            $netPay = $ratepera - $totalDeductions;
-
+            $ratePera = $monthlyRateSum + $peraSum;
+            $netPay = $ratePera - $totalDeductions;
             $first = $netPay / 2;
             $second = $netPay / 2;
 
-            $earnPeriod = 0;
-
-            $totalsByOffice[$officeName] = [
+            $officeTotals = [
                 'monthly_rate' => $monthlyRateSum,
-                'tax' => $officeEmployees->sum(fn($e) => $e->contribution->tax ?? 0),
-                'phic' => $officeEmployees->sum(fn($e) => $e->contribution->phic ?? 0),
-                'gsis_ps' => $officeEmployees->sum(fn($e) => $e->contribution->gsis_ps ?? 0),
-                'hdmf_ps' => $officeEmployees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0),
-                'hdmf_mp2' => $officeEmployees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0),
-                'hdmf_mpl' => $officeEmployees->sum(fn($e) => $e->contribution->hdmf_mpl ?? 0),
-                'hdmf_hl' => $officeEmployees->sum(fn($e) => $e->contribution->hdmf_hl ?? 0),
-                'gsis_pol' => $officeEmployees->sum(fn($e) => $e->contribution->gsis_pol ?? 0),
-                'gsis_consoloan' => $officeEmployees->sum(fn($e) => $e->contribution->gsis_consoloan ?? 0),
-                'gsis_emer' => $officeEmployees->sum(fn($e) => $e->contribution->gsis_emer ?? 0),
-                'gsis_cpl' => $officeEmployees->sum(fn($e) => $e->contribution->gsis_cpl ?? 0),
-                'gsis_gfal' => $officeEmployees->sum(fn($e) => $e->contribution->gsis_gfal ?? 0),
-                'g_mpl' => $officeEmployees->sum(fn($e) => $e->contribution->g_mpl ?? 0),
-                'g_lite' => $officeEmployees->sum(fn($e) => $e->contribution->g_lite ?? 0),
-                'bfar_provident' => $officeEmployees->sum(fn($e) => $e->contribution->bfar_provident ?? 0),
-                'dareco' => $officeEmployees->sum(fn($e) => $e->contribution->dareco ?? 0),
-                'ucpb_savings' => $officeEmployees->sum(fn($e) => $e->contribution->ucpb_savings ?? 0),
-                'isda_savings_loan' => $officeEmployees->sum(fn($e) => $e->contribution->isda_savings_loan ?? 0),
-                'isda_savings_cap_con' => $officeEmployees->sum(fn($e) => $e->contribution->isda_savings_cap_con ?? 0),
-                'tagumcoop_sl' => $officeEmployees->sum(fn($e) => $e->contribution->tagumcoop_sl ?? 0),
-                'tagum_coop_cl' => $officeEmployees->sum(fn($e) => $e->contribution->tagum_coop_cl ?? 0),
-                'tagum_coop_sc' => $officeEmployees->sum(fn($e) => $e->contribution->tagum_coop_sc ?? 0),
-                'tagum_coop_rs' => $officeEmployees->sum(fn($e) => $e->contribution->tagum_coop_rs ?? 0),
-                'tagum_coop_ers_gasaka_suretech_etc' => $officeEmployees->sum(fn($e) => $e->contribution->tagum_coop_ers_gasaka_suretech_etc ?? 0),
-                'nd' => $officeEmployees->sum(fn($e) => $e->contribution->nd ?? 0),
-                'lbp_sl' => $officeEmployees->sum(fn($e) => $e->contribution->lbp_sl ?? 0),
-                'total_charges' => $officeEmployees->sum(fn($e) => $e->contribution->total_charges ?? 0),
-                'pera' => $peraSum,
                 'uacs' => $totalUacs,
                 'totalOthers' => $totalOthers,
                 'totalDeductions' => $totalDeductions,
@@ -221,22 +184,101 @@ class RegularPayrollData extends Component
                 'first' => $first,
                 'second' => $second,
                 'earnPeriod' => $earnPeriod,
-                'total_salary' => $officeEmployees->sum(fn($e) => $e->contribution->total_salary ?? 0),
-                'gross' => $officeEmployees->sum(fn($e) => $e->contribution->gross ?? 0),
-                'rate_per_month' => $officeEmployees->sum(fn($e) => $e->contribution->rate_per_month ?? 0),
-                'leave_wo' => $officeEmployees->sum(fn($e) => $e->contribution->leave_wo ?? 0),
             ];
+            foreach ($commonFields as $field) {
+                $officeTotals[$field] = $employees->sum(fn($e) => $e->contribution->$field ?? 0);
+            }
+            foreach ($otherContributions as $field) {
+                $officeTotals[$field] = $employees->sum(fn($e) => $e->contribution->$field ?? 0);
+            }
+            $totalsByOffice[$officeName] = $officeTotals;
+        }
+
+
+
+        $overallTotal = [];
+        foreach ($employeesByOffice as $officeName => $employees) {
+            $monthlyRateSum = $employees->sum('monthly_rate');
+            $peraSum = $employees->sum(fn($e) => $e->contribution->pera ?? 0);
+            $totalUacs = $monthlyRateSum + $peraSum;
+
+            $totalFive = $employees->sum(fn($e) => $e->contribution->tax ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->phic ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
+
+            $otherContributions = [
+                'hdmf_mpl',
+                'hdmf_hl',
+                'gsis_pol',
+                'gsis_consoloan',
+                'gsis_emer',
+                'gsis_cpl',
+                'gsis_gfal',
+                'g_mpl',
+                'g_lite',
+                'bfar_provident',
+                'dareco',
+                'ucpb_savings',
+                'isda_savings_loan',
+                'isda_savings_cap_con',
+                'tagumcoop_sl',
+                'tagum_coop_cl',
+                'tagum_coop_sc',
+                'tagum_coop_rs',
+                'tagum_coop_ers_gasaka_suretech_etc',
+                'nd',
+                'lbp_sl'
+            ];
+
+            $totalOthers = collect($otherContributions)->sum(
+                fn($field) =>
+                $employees->sum(fn($e) => $e->contribution->$field ?? 0)
+            );
+            $totalDeductions = $totalFive + $totalOthers;
+            $netPay = $monthlyRateSum + $peraSum - $totalDeductions;
+            $overallTotal['monthly_rate'] = ($overallTotal['monthly_rate'] ?? 0) + $monthlyRateSum;
+            $overallTotal['pera'] = ($overallTotal['pera'] ?? 0) + $peraSum;
+            $overallTotal['tax'] = ($overallTotal['tax'] ?? 0) + $employees->sum(fn($e) => $e->contribution->tax ?? 0);
+            $overallTotal['phic'] = ($overallTotal['phic'] ?? 0) + $employees->sum(fn($e) => $e->contribution->phic ?? 0);
+            $overallTotal['gsis_ps'] = ($overallTotal['gsis_ps'] ?? 0) + $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0);
+            $overallTotal['hdmf_ps'] = ($overallTotal['hdmf_ps'] ?? 0) + $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0);
+            $overallTotal['hdmf_mp2'] = ($overallTotal['hdmf_mp2'] ?? 0) + $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
+            $overallTotal['totalFive'] = ($overallTotal['totalFive'] ?? 0) + $totalFive;
+            $overallTotal['totalOthers'] = ($overallTotal['totalOthers'] ?? 0) + $totalOthers;
+            $overallTotal['uacs'] = ($overallTotal['uacs'] ?? 0) + $totalUacs;
+            $overallTotal['grandTotalSalary'] = ($overallTotal['grandTotalSalary'] ?? 0) + $monthlyRateSum;
+            $overallTotal['otherTotal'] = ($overallTotal['otherTotal'] ?? 0) + $peraSum;
+            $overallTotal['totalDeduction'] = ($overallTotal['totalFive'] ?? 0) + ($overallTotal['totalOthers'] ?? 0);
+            $overallTotal['ps_mp2'] = ($overallTotal['hdmf_ps'] ?? 0) + ($overallTotal['hdmf_mp2'] ?? 0);
+            $overallTotal['grandTotal'] = ($overallTotal['grandTotalSalary'] ?? 0) + ($overallTotal['otherTotal'] ?? 0);
+            $overallTotal['netPay'] = ($overallTotal['grandTotal'] ?? 0) - ($overallTotal['totalDeduction'] ?? 0);
+            $overallTotal['firstHalf'] = $overallTotal['netPay'] / 2;
+            $overallTotal['secondHalf'] = $overallTotal['netPay'] / 2;
         }
 
         return [
             'employeesByOffice' => $employeesByOffice,
             'totalsByOffice' => $totalsByOffice,
-            'dateRange' => $dateRange,
+            'overallTotal' => $overallTotal,
+            'dateRange' => $this->dateRange,
+            'signatories' => $this->assigned,
         ];
     }
 
 
+    //EXPORT --------------------------------------
+    public function exportPayroll()
+    {
+        $exportData = $this->prepareExportData($this->dateRange);
 
+        // dd($exportData);
+        return Excel::download(
+            new PayrollExport($exportData),
+            $this->year . ' REGULAR PAYROLL-with LBP.xlsx'
+        );
+    }
 
 
     //ARCHIVE-------------------------------------
@@ -263,15 +305,7 @@ class RegularPayrollData extends Component
         // ]);
         // $this->dispatch('success', message: 'Archive saved successfully!');
     }
-    //EXPORT --------------------------------------
-    public function exportPayroll()
-    {
-        $exportData = $this->prepareExportData($this->dateRange);
-        return Excel::download(
-            new PayrollExport($exportData),
-            $this->year . ' REGULAR PAYROLL-with LBP.xlsx'
-        );
-    }
+
 
 
 
@@ -297,128 +331,67 @@ class RegularPayrollData extends Component
             return $employee->officeDetails->name ?? $employee->office ?? 'Unknown Office';
         });
 
+
+
         $totalsByOffice = [];
 
-        // $grandTotalSalary = 0;
-        // $otherTotal = 0;
-        // $grandTotal = 0;
-        // $earnPeriodTotal = 0;
-        // $taxTotal = 0;
-        // $phicTotal = 0;
-        // $gsisTotal = 0;
-        // $pagibig1 = 0;
-        // $pagibig2 = 0;
+        $otherContributions = [
+            'hdmf_mpl',
+            'hdmf_hl',
+            'gsis_pol',
+            'gsis_consoloan',
+            'gsis_emer',
+            'gsis_cpl',
+            'gsis_gfal',
+            'g_mpl',
+            'g_lite',
+            'bfar_provident',
+            'dareco',
+            'ucpb_savings',
+            'isda_savings_loan',
+            'isda_savings_cap_con',
+            'tagumcoop_sl',
+            'tagum_coop_cl',
+            'tagum_coop_sc',
+            'tagum_coop_rs',
+            'tagum_coop_ers_gasaka_suretech_etc',
+            'nd',
+            'lbp_sl'
+        ];
 
+        $commonFields = [
+            'tax',
+            'phic',
+            'gsis_ps',
+            'hdmf_ps',
+            'hdmf_mp2',
+            'total_charges',
+            'total_salary',
+            'pera',
+            'gross',
+            'rate_per_month',
+            'leave_wo'
+        ];
 
         foreach ($employeesByOffice as $officeName => $employees) {
             $monthlyRateSum = $employees->sum('monthly_rate');
             $peraSum = $employees->sum(fn($e) => $e->contribution->pera ?? 0);
             $totalUacs = $monthlyRateSum + $peraSum;
             $earnPeriod = ($employee->monthly_rate ?? 0) + ($employee->contribution->pera ?? 0);
-
-
-            $otherContributions = [
-                'hdmf_mpl',
-                'hdmf_hl',
-                'gsis_pol',
-                'gsis_consoloan',
-                'gsis_emer',
-                'gsis_cpl',
-                'gsis_gfal',
-                'g_mpl',
-                'g_lite',
-                'bfar_provident',
-                'dareco',
-                'ucpb_savings',
-                'isda_savings_loan',
-                'isda_savings_cap_con',
-                'tagumcoop_sl',
-                'tagum_coop_cl',
-                'tagum_coop_sc',
-                'tagum_coop_rs',
-                'tagum_coop_ers_gasaka_suretech_etc',
-                'nd',
-                'lbp_sl'
-            ];
-            $totalOthers = collect($otherContributions)->sum(fn($field) => $employees->sum(fn($e) => $e->contribution->$field ?? 0));
-
-
-            $totalFive =
-                $employees->sum(fn($e) => $e->contribution->tax ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->phic ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
-
-            $totalDeductions =  $totalFive + $totalOthers;
-
-
-            $ratepera = $monthlyRateSum + $peraSum;
-            $netPay = $ratepera - $totalDeductions;
-
-
-
+            $totalOthers = collect($otherContributions)->sum(
+                fn($field) => $employees->sum(fn($e) => $e->contribution->$field ?? 0)
+            );
+            $totalFive = collect(['tax', 'phic', 'gsis_ps', 'hdmf_ps', 'hdmf_mp2'])->sum(
+                fn($field) => $employees->sum(fn($e) => $e->contribution->$field ?? 0)
+            );
+            $totalDeductions = $totalFive + $totalOthers;
+            $ratePera = $monthlyRateSum + $peraSum;
+            $netPay = $ratePera - $totalDeductions;
             $first = $netPay / 2;
             $second = $netPay / 2;
 
-
-            // Accumulate grand totals here
-            // $grandTotalSalary += $monthlyRateSum;
-            // $otherTotal += $peraSum;
-            // $grandTotal += $totalUacs;
-            // $grandTotal += $earnPeriod;
-
-            // $tax = $employees->sum(fn($e) => $e->contribution->tax ?? 0);
-            // $phic = $employees->sum(fn($e) => $e->contribution->phic ?? 0);
-            // $gsis = $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0);
-            // $hdmf1 = $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0);
-            // $hdmf2 = $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
-
-            // $taxTotal += $tax;
-            // $phicTotal += $phic;
-            // $gsisTotal += $gsis;
-            // $pagibig1 += $hdmf1;
-            // $pagibig2 += $hdmf2;
-
-
-
-
-
-
-            $totalsByOffice[$officeName] = [
-                'monthly_rate' => $employees->sum('monthly_rate'),
-                'tax' => $employees->sum(fn($e) => $e->contribution->tax ?? 0),
-                'phic' => $employees->sum(fn($e) => $e->contribution->phic ?? 0),
-                'gsis_ps' => $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0),
-                'hdmf_ps' => $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0),
-                'hdmf_mp2' => $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0),
-                'hdmf_mpl' => $employees->sum(fn($e) => $e->contribution->hdmf_mpl ?? 0),
-                'hdmf_hl' => $employees->sum(fn($e) => $e->contribution->hdmf_hl ?? 0),
-                'gsis_pol' => $employees->sum(fn($e) => $e->contribution->gsis_pol ?? 0),
-                'gsis_consoloan' => $employees->sum(fn($e) => $e->contribution->gsis_consoloan ?? 0),
-                'gsis_emer' => $employees->sum(fn($e) => $e->contribution->gsis_emer ?? 0),
-                'gsis_cpl' => $employees->sum(fn($e) => $e->contribution->gsis_cpl ?? 0),
-                'gsis_gfal' => $employees->sum(fn($e) => $e->contribution->gsis_gfal ?? 0),
-                'g_mpl' => $employees->sum(fn($e) => $e->contribution->g_mpl ?? 0),
-                'g_lite' => $employees->sum(fn($e) => $e->contribution->g_lite ?? 0),
-                'bfar_provident' => $employees->sum(fn($e) => $e->contribution->bfar_provident ?? 0),
-                'dareco' => $employees->sum(fn($e) => $e->contribution->dareco ?? 0),
-                'ucpb_savings' => $employees->sum(fn($e) => $e->contribution->ucpb_savings ?? 0),
-                'isda_savings_loan' => $employees->sum(fn($e) => $e->contribution->isda_savings_loan ?? 0),
-                'isda_savings_cap_con' => $employees->sum(fn($e) => $e->contribution->isda_savings_cap_con ?? 0),
-                'tagumcoop_sl' => $employees->sum(fn($e) => $e->contribution->tagumcoop_sl ?? 0),
-                'tagum_coop_cl' => $employees->sum(fn($e) => $e->contribution->tagum_coop_cl ?? 0),
-                'tagum_coop_sc' => $employees->sum(fn($e) => $e->contribution->tagum_coop_sc ?? 0),
-                'tagum_coop_rs' => $employees->sum(fn($e) => $e->contribution->tagum_coop_rs ?? 0),
-                'tagum_coop_ers_gasaka_suretech_etc' => $employees->sum(fn($e) => $e->contribution->tagum_coop_ers_gasaka_suretech_etc ?? 0),
-                'nd' => $employees->sum(fn($e) => $e->contribution->nd ?? 0),
-                'lbp_sl' => $employees->sum(fn($e) => $e->contribution->lbp_sl ?? 0),
-                'total_charges' => $employees->sum(fn($e) => $e->contribution->total_charges ?? 0),
-                'total_salary' => $employees->sum(fn($e) => $e->contribution->total_salary ?? 0),
-                'pera' => $employees->sum(fn($e) => $e->contribution->pera ?? 0),
-                'gross' => $employees->sum(fn($e) => $e->contribution->gross ?? 0),
-                'rate_per_month' => $employees->sum(fn($e) => $e->contribution->rate_per_month ?? 0),
-                'leave_wo' => $employees->sum(fn($e) => $e->contribution->leave_wo ?? 0),
+            $officeTotals = [
+                'monthly_rate' => $monthlyRateSum,
                 'uacs' => $totalUacs,
                 'totalOthers' => $totalOthers,
                 'totalDeductions' => $totalDeductions,
@@ -427,36 +400,28 @@ class RegularPayrollData extends Component
                 'second' => $second,
                 'earnPeriod' => $earnPeriod,
             ];
+            foreach ($commonFields as $field) {
+                $officeTotals[$field] = $employees->sum(fn($e) => $e->contribution->$field ?? 0);
+            }
+            foreach ($otherContributions as $field) {
+                $officeTotals[$field] = $employees->sum(fn($e) => $e->contribution->$field ?? 0);
+            }
+            $totalsByOffice[$officeName] = $officeTotals;
         }
 
 
-        $overallTotal = [
-            'monthly_rate' => 0,
-            'pera' => 0,
-            'tax' => 0,
-            'phic' => 0,
-            'gsis_ps' => 0,
-            'hdmf_ps' => 0,
-            'hdmf_mp2' => 0,
-            'totalFive' => 0,
-            'totalOthers' => 0,
-            'uacs' => 0,
-            'grandTotalSalary' => 0,
-            'otherTotal' => 0,
-            'grandTotal' => 0,
-        ];
 
+        $overallTotal = [];
         foreach ($employeesByOffice as $officeName => $employees) {
             $monthlyRateSum = $employees->sum('monthly_rate');
             $peraSum = $employees->sum(fn($e) => $e->contribution->pera ?? 0);
             $totalUacs = $monthlyRateSum + $peraSum;
-            $earnPeriod = ($employee->monthly_rate ?? 0) + ($employee->contribution->pera ?? 0);
 
-            $totalFive = $employees->sum(fn($e) => $e->contribution->tax ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->phic ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0) +
-                $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
+            $totalFive = $employees->sum(fn($e) => $e->contribution->tax ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->phic ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0)
+                + $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
 
             $otherContributions = [
                 'hdmf_mpl',
@@ -482,34 +447,32 @@ class RegularPayrollData extends Component
                 'lbp_sl'
             ];
 
-            $totalOthers = collect($otherContributions)->sum(fn($field) => $employees->sum(fn($e) => $e->contribution->$field ?? 0));
-
+            $totalOthers = collect($otherContributions)->sum(
+                fn($field) =>
+                $employees->sum(fn($e) => $e->contribution->$field ?? 0)
+            );
             $totalDeductions = $totalFive + $totalOthers;
-            $ratePera = $monthlyRateSum + $peraSum;
-            $netPay = $ratePera - $totalDeductions;
-
-            $first = $netPay / 2;
-            $second = $netPay / 2;
-
-            $overallTotal['monthly_rate'] += $monthlyRateSum;
-            $overallTotal['pera'] += $peraSum;
-            $overallTotal['tax'] += $employees->sum(fn($e) => $e->contribution->tax ?? 0);
-            $overallTotal['phic'] += $employees->sum(fn($e) => $e->contribution->phic ?? 0);
-            $overallTotal['gsis_ps'] += $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0);
-            $overallTotal['hdmf_ps'] += $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0);
-            $overallTotal['hdmf_mp2'] += $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
-            $overallTotal['totalFive'] += $totalFive;
-            $overallTotal['totalOthers'] += $totalOthers;
-            $overallTotal['uacs'] += $totalUacs;
-            $overallTotal['grandTotalSalary'] += $monthlyRateSum;
-            $overallTotal['otherTotal'] += $peraSum;
-            $overallTotal['grandTotal'] += $monthlyRateSum + $peraSum + $totalUacs;
+            $netPay = $monthlyRateSum + $peraSum - $totalDeductions;
+            $overallTotal['monthly_rate'] = ($overallTotal['monthly_rate'] ?? 0) + $monthlyRateSum;
+            $overallTotal['pera'] = ($overallTotal['pera'] ?? 0) + $peraSum;
+            $overallTotal['tax'] = ($overallTotal['tax'] ?? 0) + $employees->sum(fn($e) => $e->contribution->tax ?? 0);
+            $overallTotal['phic'] = ($overallTotal['phic'] ?? 0) + $employees->sum(fn($e) => $e->contribution->phic ?? 0);
+            $overallTotal['gsis_ps'] = ($overallTotal['gsis_ps'] ?? 0) + $employees->sum(fn($e) => $e->contribution->gsis_ps ?? 0);
+            $overallTotal['hdmf_ps'] = ($overallTotal['hdmf_ps'] ?? 0) + $employees->sum(fn($e) => $e->contribution->hdmf_ps ?? 0);
+            $overallTotal['hdmf_mp2'] = ($overallTotal['hdmf_mp2'] ?? 0) + $employees->sum(fn($e) => $e->contribution->hdmf_mp2 ?? 0);
+            $overallTotal['totalFive'] = ($overallTotal['totalFive'] ?? 0) + $totalFive;
+            $overallTotal['totalOthers'] = ($overallTotal['totalOthers'] ?? 0) + $totalOthers;
+            $overallTotal['uacs'] = ($overallTotal['uacs'] ?? 0) + $totalUacs;
+            $overallTotal['grandTotalSalary'] = ($overallTotal['grandTotalSalary'] ?? 0) + $monthlyRateSum;
+            $overallTotal['otherTotal'] = ($overallTotal['otherTotal'] ?? 0) + $peraSum;
+            $overallTotal['totalDeduction'] = ($overallTotal['totalFive'] ?? 0) + ($overallTotal['totalOthers'] ?? 0);
+            $overallTotal['ps_mp2'] = ($overallTotal['hdmf_ps'] ?? 0) + ($overallTotal['hdmf_mp2'] ?? 0);
+            $overallTotal['grandTotal'] = ($overallTotal['grandTotalSalary'] ?? 0) + ($overallTotal['otherTotal'] ?? 0);
+            $overallTotal['netPay'] = ($overallTotal['grandTotal'] ?? 0) - ($overallTotal['totalDeduction'] ?? 0);
+            $overallTotal['firstHalf'] = $overallTotal['netPay'] / 2;
+            $overallTotal['secondHalf'] = $overallTotal['netPay'] / 2;
         }
 
-
-
-        // dd($overallTotal);
-        // dd($employees);
 
         return view('livewire.regular-payroll-data', [
             'employeesByOffice' => $employeesByOffice,

@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('assign', function (Blueprint $table) {
             $table->id();
             $table->string('prapared_by')->nullable();
-            $table->string('noted_by')->nullable();
-            $table->string('funds_availability')->nullable();
-            $table->string('approved_by')->nullable();
+            $table->string('checked_by')->nullable();
+            $table->string('certified_by')->nullable();
+            $table->string('funds_available')->nullable();
+            $table->string('approved_payment')->nullable();
             $table->timestamps();
         });
     }
