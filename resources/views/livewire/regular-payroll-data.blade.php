@@ -487,7 +487,6 @@
                     @endforeach
                     <tr class="">
                         <td class="border-l border-gray-300 px-2 py-1">GRAND TOTAL SALARY</td>
-                        {{-- <td class="px-2 py-1 text-right">{{ number_format($grandTotalSalary, 2) }}</td> --}}
                         <td class="px-2 py-1 text-right">{{ number_format($overallTotal['grandTotalSalary'], 2) }}</td>
                         <td colspan="11" class="border-r border-gray-300 "></td>
                     </tr>

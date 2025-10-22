@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
 {
@@ -49,7 +50,6 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
                 $sheet = $event->sheet->getDelegate();
                 $currentRow = 1;
 
-                // --- PRINT SETUP (already present) ---
                 $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LEGAL);
                 $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
                 $sheet->getPageSetup()->setFitToWidth(1);
@@ -63,10 +63,8 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
                 $sheet->getHeaderFooter()->setOddFooter('&CPage &P of &N');
                 $sheet->getHeaderFooter()->setEvenFooter('&CPage &P of &N');
 
-                // Draw Header (up to row 11)
                 $this->drawHeader($sheet, $currentRow);
 
-                // Start of data rows
                 $currentRow = 12;
                 $employeesByOffice = $this->data['employeesByOffice'];
                 $totalsByOffice = $this->data['totalsByOffice'];
@@ -83,10 +81,8 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
                     $currentRow = $this->drawOfficeTotalsRow($sheet, $currentRow, $officeName, $officeTotals);
                 }
 
-                // Draw Overall Totals
                 $this->drawOverallTotals($sheet, $currentRow);
 
-                // Draw Signatories 🚀 - PASSING THE DYNAMIC DATA
                 $this->drawSignatories($sheet, $currentRow, $this->data['signatories'] ?? null);
             },
         ];
@@ -100,9 +96,8 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
         $sheet->mergeCells('D3:H3')->setCellValue('D3', 'BUREAU OF FISHERIES AND AQUATIC RESOURCES');
         $sheet->mergeCells('D4:H4')->setCellValue('D4', 'R. Magsaysay Ave., Davao City');
         $sheet->getStyle('D1:D4')->getFont()->setBold(true);
-        $sheet->getStyle('D1:D4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->mergeCells('G6:H6')->setCellValue('G6', 'GENERAL PAYROLL');
-        $sheet->getStyle('G6')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('G6')->getFont()->setBold(true);
         $sheet->getStyle('G6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->setCellValue('B7', 'BFAR-REGIONAL OFFICE');
         $sheet->setCellValue('B8', 'PERIOD COVERED: ' . $this->data['dateRange']);
@@ -168,87 +163,35 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
         $sheet->freezePane('A12');
     }
 
-    /**
-     * Draws the office title row.
-     * @param Worksheet $sheet
-     * @param int $currentRow
-     * @param string $officeName
-     * @return int The next row number.
-     */
     private function drawOfficeRow(Worksheet $sheet, int $currentRow, string $officeName): int
     {
         $sheet->mergeCells('B' . $currentRow . ':N' . $currentRow);
+        $sheet->getStyle('B' . $currentRow . ':N' . $currentRow)->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle('B' . $currentRow . ':N' . $currentRow)->getFill()->getStartColor()->setRGB('B4C6E7');
         $sheet->setCellValue('B' . $currentRow, strtoupper($officeName));
         $sheet->getStyle('B' . $currentRow)->getFont()->setBold(true)->setSize(10);
         $sheet->getStyle('B' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('B' . $currentRow . ':N' . $currentRow)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_THIN);
         $currentRow++;
         return $currentRow;
     }
 
-    /**
-     * Draws an employee's payroll data row(s).
-     * @param Worksheet $sheet
-     * @param int $currentRow
-     * @param object $employee
-     * @return int The next row number.
-     */
     private function drawEmployeeRow(Worksheet $sheet, int $currentRow, $employee): int
     {
-        // Data for the first line of the employee row
-        $name = ($employee->name ?? '') . '/' . ($employee->position ?? '');
+        $contrib = $employee->contribution;
         $monthlyRate = $employee->monthly_rate ?? 0;
-        $pera = $employee->contribution->pera ?? 0;
+        $pera = $contrib->pera ?? 0;
         $earnedForPeriod = $monthlyRate + $pera;
 
-        $contrib = $employee->contribution;
         $tax = $contrib->tax ?? 0;
         $phic = $contrib->phic ?? 0;
         $gsisPs = $contrib->gsis_ps ?? 0;
         $hdmfPs = $contrib->hdmf_ps ?? 0;
         $hdmfMp2 = $contrib->hdmf_mp2 ?? 0;
+        $hdmfTotal = $hdmfPs + $hdmfMp2;
 
-        $totalDeductions = $contrib->total_charges ?? 0;
-        $netPay = $earnedForPeriod - $totalDeductions;
-        $firstHalf = $netPay / 2;
-        $secondHalf = $netPay / 2;
+        $formatZeroCheck = fn($val) => ($val != 0) ? $val : '-';
 
-        // Line 1: Main employee data
-        $sheet->setCellValue('B' . $currentRow, $name);
-        $sheet->setCellValue('C' . $currentRow, $monthlyRate); // Monthly Salary
-        $sheet->setCellValue('D' . $currentRow, $earnedForPeriod); // Earned for Period
-        $sheet->setCellValue('E' . $currentRow, $tax); // W/TAX
-        $sheet->setCellValue('F' . $currentRow, $phic); // PHIC
-        $sheet->setCellValue('G' . $currentRow, $gsisPs); // GSIS
-        $sheet->setCellValue('H' . $currentRow, $hdmfPs + $hdmfMp2); // P'IBIG 1 & 2 
-        $sheet->setCellValue('K' . $currentRow, $totalDeductions); // Total Deductions
-        $sheet->setCellValue('L' . $currentRow, $netPay); // Net Pay
-        $sheet->setCellValue('M' . $currentRow, $firstHalf); // 1ST
-        $sheet->setCellValue('N' . $currentRow, $secondHalf); // 2ND
-
-        // Format money columns for line 1
-        $moneyRange1 = 'C' . $currentRow . ':H' . $currentRow;
-        $moneyRange2 = 'K' . $currentRow . ':N' . $currentRow;
-        $sheet->getStyle($moneyRange1)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $sheet->getStyle($moneyRange2)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $sheet->getStyle($moneyRange1)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle($moneyRange2)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('I' . $currentRow . ':J' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-
-        // Apply borders for the row
-        $sheet->getStyle('B' . $currentRow . ':N' . $currentRow)->applyFromArray([
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-        ]);
-        $sheet->getStyle('B' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-
-        // Line 2: Other Income (PERA) and first "Other" deduction
-        $currentRow++;
-        $sheet->setCellValue('B' . $currentRow, $employee->position ?? ''); // Second line of employee/position
-        $sheet->setCellValue('C' . $currentRow, $pera); // Other Income Amount
-
-        // Get the list of 'Other Deductions' that have non-zero values
         $otherDeductions = [];
-        // Map database fields to their common name/code (based on your image/logic)
         $deductionMap = [
             'g_mpl' => 'G MPL',
             'g_lite' => 'G-LITE',
@@ -268,147 +211,150 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
             'tagum_coop_sc' => 'TAGUM COOP SC',
             'tagum_coop_rs' => 'TAGUM COOP RS',
             'tagum_coop_ers_gasaka_suretech_etc' => 'TAGUM COOP ETC',
-            'nd' => 'ND'
+            'nd' => 'ND',
+            'isda_savings_loan' => 'ISDA SAVINGS LOAN',
+            'isda_savings_cap_con' => 'ISDA SAVINGS CAP CON',
         ];
 
+        $totalOtherDeductions = 0;
         foreach ($deductionMap as $dbField => $label) {
             $amount = $contrib->$dbField ?? 0;
             if ($amount > 0) {
                 $otherDeductions[] = ['code' => $label, 'amount' => $amount];
+                $totalOtherDeductions += $amount;
             }
         }
 
-        // Display the other deductions, starting from the first line
-        $maxDeductionLines = max(1, count($otherDeductions));
+        $totalDeductions = $tax + $phic + $gsisPs + $hdmfTotal + $totalOtherDeductions;
 
-        for ($i = 0; $i < $maxDeductionLines; $i++) {
-            $currentDeductionRow = $currentRow + $i;
-            
-            // Re-apply borders on subsequent rows as they are outside the initial merge/style block
-            $sheet->getStyle('B' . $currentDeductionRow . ':N' . $currentDeductionRow)->applyFromArray([
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-            ]);
+        $netPay = $earnedForPeriod - $totalDeductions;
+        $firstHalf = $netPay / 2;
+        $secondHalf = $netPay / 2;
 
-            if ($i == 0) {
-                // First deduction on the second line of the main employee row
-                if (isset($otherDeductions[0])) {
-                    $sheet->setCellValue('I' . $currentDeductionRow, $otherDeductions[0]['code']);
-                    $sheet->setCellValue('J' . $currentDeductionRow, $otherDeductions[0]['amount']);
-                }
-                $sheet->setCellValue('B' . $currentDeductionRow, $employee->position ?? ''); // Second line for position
-                $sheet->getStyle('C' . $currentDeductionRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                $sheet->getStyle('C' . $currentDeductionRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $fullName = ($employee->first_name ?? '') . ' ' . ($employee->last_name ?? '');
+        $sheet->setCellValue('B' . $currentRow, $fullName);
+        $sheet->setCellValue('C' . $currentRow, $monthlyRate);
+        $sheet->setCellValue('D' . $currentRow, $earnedForPeriod);
+        $sheet->setCellValue('E' . $currentRow, $formatZeroCheck($tax));
+        $sheet->setCellValue('F' . $currentRow, $formatZeroCheck($phic));
+        $sheet->setCellValue('G' . $currentRow, $formatZeroCheck($gsisPs));
+        $sheet->setCellValue('H' . $currentRow, $formatZeroCheck($hdmfTotal));
+        $sheet->setCellValue('K' . $currentRow, $formatZeroCheck($totalDeductions));
+        $sheet->setCellValue('L' . $currentRow, $formatZeroCheck($netPay));
+        $sheet->setCellValue('M' . $currentRow, $firstHalf);
+        $sheet->setCellValue('N' . $currentRow, $secondHalf);
 
-            } elseif (isset($otherDeductions[$i])) {
-                // Subsequent deductions add more rows
+        if (isset($otherDeductions[0])) {
+            $sheet->setCellValue('I' . $currentRow, $otherDeductions[0]['code']);
+            $sheet->setCellValue('J' . $currentRow, $otherDeductions[0]['amount']);
+        }
+
+        $moneyRange1 = 'C' . $currentRow . ':H' . $currentRow;
+        $moneyRange2 = 'K' . $currentRow . ':N' . $currentRow;
+        $sheet->getStyle($moneyRange1)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $sheet->getStyle($moneyRange2)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $sheet->getStyle($moneyRange1)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle($moneyRange2)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('B' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I' . $currentRow . ':J' . $currentRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $sheet->getStyle('I' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('J' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        $currentRow++;
+
+        $maxDeductionLines = count($otherDeductions);
+
+        for ($i = 1; $i < $maxDeductionLines; $i++) {
+            $currentDeductionRow = $currentRow + ($i - 1);
+
+            if ($i == 1) {
+                $sheet->setCellValue('B' . $currentDeductionRow, $employee->position ?? '');
+                $sheet->setCellValue('C' . $currentDeductionRow, $pera);
+            }
+
+            if (isset($otherDeductions[$i])) {
                 $sheet->setCellValue('I' . $currentDeductionRow, $otherDeductions[$i]['code']);
                 $sheet->setCellValue('J' . $currentDeductionRow, $otherDeductions[$i]['amount']);
             }
 
-            // Style for deduction rows
+            $sheet->getStyle('C' . $currentDeductionRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $sheet->getStyle('C' . $currentDeductionRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             $sheet->getStyle('I' . $currentDeductionRow . ':J' . $currentDeductionRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             $sheet->getStyle('I' . $currentDeductionRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
             $sheet->getStyle('J' . $currentDeductionRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle('B' . $currentDeductionRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         }
 
-        // Return the next available row number
-        return $currentRow + $maxDeductionLines;
+        $rowsUsedByLoop = max(0, $maxDeductionLines - 1);
+
+        return $currentRow + $rowsUsedByLoop;
     }
 
-    /**
-     * Draws the office totals row.
-     * @param Worksheet $sheet
-     * @param int $currentRow
-     * @param string $officeName
-     * @param array $totals
-     * @return int The next row number.
-     */
     private function drawOfficeTotalsRow(Worksheet $sheet, int $currentRow, string $officeName, array $totals): int
     {
-        // First line of totals
-        $sheet->mergeCells('B' . $currentRow . ':B' . ($currentRow + 1));
-        $sheet->setCellValue('B' . $currentRow, 'TOTAL ' . strtoupper($officeName));
-        $sheet->setCellValue('C' . $currentRow, $totals['monthly_rate'] ?? 0); // Total Monthly Salary
-        $sheet->setCellValue('D' . $currentRow, $totals['monthly_rate'] ?? 0); // Total Earned for Period (Salary only for line 1)
-        $sheet->setCellValue('E' . $currentRow, $totals['tax'] ?? 0);
-        $sheet->setCellValue('F' . $currentRow, $totals['phic'] ?? 0);
-        $sheet->setCellValue('G' . $currentRow, $totals['gsis_ps'] ?? 0);
-        $sheet->setCellValue('H' . $currentRow, ($totals['hdmf_ps'] ?? 0) + ($totals['hdmf_mp2'] ?? 0));
-        $sheet->setCellValue('K' . $currentRow, $totals['totalDeductions'] ?? 0);
-        $sheet->setCellValue('L' . $currentRow, $totals['net_pay'] ?? 0);
-        $sheet->setCellValue('M' . $currentRow, $totals['first'] ?? 0);
-        $sheet->setCellValue('N' . $currentRow, $totals['second'] ?? 0);
-
-        // Second line of totals
+        $salaryRow = $currentRow;
+        $sheet->setCellValue('B' . $salaryRow, 'TOTAL SALARY:');
+        $sheet->setCellValue('C' . $salaryRow, $totals['monthly_rate'] ?? 0);
         $currentRow++;
-        $sheet->setCellValue('C' . $currentRow, $totals['pera'] ?? 0); // Other Income Total
-        $sheet->setCellValue('D' . $currentRow, $totals['uacs'] ?? 0); // Total UACS
 
-        // Style for Total rows
-        $totalRange = 'C' . ($currentRow - 1) . ':N' . $currentRow;
+
+        $peraRow = $currentRow;
+        $sheet->setCellValue('B' . $peraRow, 'OTHER IN CODE TOTAL (PERA):');
+        $sheet->setCellValue('C' . $peraRow, $totals['pera'] ?? 0);
+        $currentRow++;
+
+
+        $uacsRow = $currentRow;
+        $uacsCode = '14.1002';
+        $sheet->setCellValue('B' . $uacsRow, 'TOTAL UACS ' . $uacsCode . ':');
+        $totalUACS_Earned = $totals['uacs'] ?? 0;
+        $sheet->setCellValue('C' . $uacsRow, ($totalUACS_Earned ?? 0) == 0 ? '-' : $totalUACS_Earned);
+        $sheet->setCellValue('D' . $uacsRow, ($totalUACS_Earned ?? 0) == 0 ? '-' : $totalUACS_Earned);
+        $sheet->setCellValue('E' . $uacsRow, ($totals['tax'] ?? 0) == 0 ? '-' : $totals['tax']);
+        $sheet->setCellValue('F' . $uacsRow, ($totals['phic'] ?? 0) == 0 ? '-' : $totals['phic']);
+        $sheet->setCellValue('G' . $uacsRow, ($totals['gsis_ps'] ?? 0) == 0 ? '-' : $totals['gsis_ps']);
+        $hdmf_total = ($totals['hdmf_ps'] ?? 0) + ($totals['hdmf_mp2'] ?? 0);
+        $sheet->setCellValue('H' . $uacsRow, $hdmf_total == 0 ? '-' : $hdmf_total);
+        $sheet->setCellValue('J' . $uacsRow, ($totals['totalOthers'] ?? 0) == 0 ? '-' : $totals['totalOthers']);
+        $sheet->setCellValue('K' . $uacsRow, ($totals['totalDeductions'] ?? 0) == 0 ? '-' : $totals['totalDeductions']);
+        $sheet->setCellValue('L' . $uacsRow, ($totals['net_pay'] ?? 0) == 0 ? '-' : $totals['net_pay']);
+        $sheet->setCellValue('M' . $uacsRow, ($totals['first'] ?? 0) == 0 ? '-' : $totals['first']);
+        $sheet->setCellValue('N' . $uacsRow, ($totals['second'] ?? 0) == 0 ? '-' : $totals['second']);
+
+        $totalRange = 'C' . $salaryRow . ':N' . $uacsRow;
         $sheet->getStyle($totalRange)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $sheet->getStyle($totalRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('B' . ($currentRow - 1) . ':N' . $currentRow)->applyFromArray([
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-        ]);
-        $sheet->getStyle('B' . ($currentRow - 1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('B' . ($currentRow - 1) . ':B' . $currentRow)->getFont()->setBold(true);
+        $sheet->getStyle('B' . $salaryRow . ':B' . $uacsRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+        $uacsRange = 'B' . $uacsRow . ':N' . $uacsRow;
+        $sheet->getStyle($uacsRange)->getFont()->setBold(true);
+        $sheet->getStyle($uacsRange)->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle($uacsRange)->getFill()->getStartColor()->setRGB('C6E1B4');
 
         $currentRow++;
         return $currentRow;
     }
 
-    /**
-     * Draws the overall grand totals section.
-     * @param Worksheet $sheet
-     * @param int $currentRow
-     */
+
     private function drawOverallTotals(Worksheet $sheet, int &$currentRow): void
     {
         $overallTotal = $this->data['overallTotal'];
 
-        // Row for 'TOTAL UACS / TOTAL SALARY'
-        $sheet->mergeCells('B' . $currentRow . ':B' . ($currentRow + 2));
-        $sheet->setCellValue('B' . $currentRow, 'TOTAL UACS/SA14.505');
-        $sheet->setCellValue('C' . $currentRow, $overallTotal['grandTotalSalary'] ?? 0); // Total Salary (Sum of monthly_rate)
-        $sheet->setCellValue('D' . $currentRow, $overallTotal['grandTotalSalary'] ?? 0); // Earned for period is the salary
-        $sheet->setCellValue('E' . $currentRow, $overallTotal['tax'] ?? 0);
-        $sheet->setCellValue('F' . $currentRow, $overallTotal['phic'] ?? 0);
-        $sheet->setCellValue('G' . $currentRow, $overallTotal['gsis_ps'] ?? 0);
-        $sheet->setCellValue('H' . $currentRow, $overallTotal['ps_mp2'] ?? 0);
-        $sheet->setCellValue('K' . $currentRow, $overallTotal['totalDeduction'] ?? 0);
-        $sheet->setCellValue('L' . $currentRow, $overallTotal['netPay'] ?? 0);
-        $sheet->setCellValue('M' . $currentRow, $overallTotal['firstHalf'] ?? 0);
-        $sheet->setCellValue('N' . $currentRow, $overallTotal['secondHalf'] ?? 0);
-        $currentRow++;
-
-        // Row for 'OTHER TOTAL'
-        $sheet->setCellValue('B' . $currentRow, 'OTHER IN CODE TOTAL');
-        $sheet->setCellValue('C' . $currentRow, $overallTotal['otherTotal'] ?? 0); // Other Total (Sum of pera)
-        $sheet->setCellValue('D' . $currentRow, $overallTotal['otherTotal'] ?? 0); // Earned for period is the other total
-        $sheet->getStyle('B' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $currentRow++;
-
-        // Row for 'TOTAL UACS/SA14.505' (Grand Total)
-        $sheet->setCellValue('B' . $currentRow, 'TOTAL UACS/SA14.505');
-        $sheet->setCellValue('C' . $currentRow, $overallTotal['grandTotal'] ?? 0); // Sum of Total Salary + Other Total
-        $sheet->setCellValue('D' . $currentRow, $overallTotal['grandTotal'] ?? 0); // Earned for period is the grand total
-        $sheet->getStyle('B' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $currentRow++;
-
-        // Row for 'GRAND TOTAL SALARY'
-        $sheet->setCellValue('B' . $currentRow, 'GRAND TOTAL SALARY');
+        $sheet->setCellValue('B' . $currentRow, 'TOTAL SALARY');
         $sheet->setCellValue('C' . $currentRow, $overallTotal['grandTotalSalary'] ?? 0);
-        $sheet->setCellValue('D' . $currentRow, $overallTotal['grandTotalSalary'] ?? 0);
+        $currentRow++;
+
+        $sheet->setCellValue('B' . $currentRow, 'OTHER IN CODE TOTAL');
+        $sheet->setCellValue('C' . $currentRow, $overallTotal['otherTotal'] ?? 0);
         $sheet->getStyle('B' . $currentRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $currentRow++;
 
-        // Row for 'GRAND TOTAL'
-        $sheet->mergeCells('B' . $currentRow . ':B' . ($currentRow + 1));
-        $sheet->setCellValue('B' . $currentRow, 'GRAND TOTAL');
-        $sheet->getStyle('B' . $currentRow)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->setCellValue('C' . $currentRow, $overallTotal['grandTotal'] ?? 0);
-        $sheet->setCellValue('D' . $currentRow, $overallTotal['grandTotal'] ?? 0);
+        $startTotalRow = $currentRow;
+        $grandTotalSum = ($overallTotal['grandTotalSalary'] ?? 0) + ($overallTotal['otherTotal'] ?? 0);
+
+        $sheet->setCellValue('B' . $currentRow, 'GRAND TOTAL UACS/SA14.505');
+        $sheet->setCellValue('C' . $currentRow, $grandTotalSum);
+        $sheet->setCellValue('D' . $currentRow, $grandTotalSum);
         $sheet->setCellValue('E' . $currentRow, $overallTotal['tax'] ?? 0);
         $sheet->setCellValue('F' . $currentRow, $overallTotal['phic'] ?? 0);
         $sheet->setCellValue('G' . $currentRow, $overallTotal['gsis_ps'] ?? 0);
@@ -420,28 +366,20 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
         $sheet->setCellValue('M' . $currentRow, $overallTotal['firstHalf'] ?? 0);
         $sheet->setCellValue('N' . $currentRow, $overallTotal['secondHalf'] ?? 0);
 
-        // Row for other Grand Total details (The remaining other income total)
-        $currentRow++;
-        $sheet->setCellValue('C' . $currentRow, $overallTotal['otherTotal'] ?? 0); 
-        $sheet->setCellValue('D' . $currentRow, $overallTotal['otherTotal'] ?? 0);
         $currentRow++;
 
-        // Final styling and borders for Grand Totals
-        $grandTotalRange = 'C' . ($currentRow - 6) . ':N' . ($currentRow - 1);
+        $grandTotalRange = 'C' . ($startTotalRow - 2) . ':N' . ($currentRow - 1);
+
         $sheet->getStyle($grandTotalRange)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         $sheet->getStyle($grandTotalRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('B' . ($currentRow - 6) . ':N' . ($currentRow - 1))->getFont()->setBold(true);
-        $sheet->getStyle('B' . ($currentRow - 6) . ':N' . ($currentRow - 1))->applyFromArray([
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
-        ]);
+        $sheet->getStyle('B' . ($startTotalRow - 2) . ':N' . ($currentRow - 1))->getFont()->setBold(true);
+
+        $finalRowRange = 'B' . $startTotalRow . ':N' . ($currentRow - 1);
+        $sheet->getStyle($finalRowRange)->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle($finalRowRange)->getFill()->getStartColor()->setRGB('F5B084');
     }
 
-    /**
-     * Draws the signatory section dynamically using assigned data.
-     * @param Worksheet $sheet
-     * @param int $currentRow
-     * @param object|null $assigned
-     */
+
     private function drawSignatories(Worksheet $sheet, int &$currentRow, $assigned): void
     {
         $labelsRow = $currentRow;
@@ -451,14 +389,13 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
         $sheet->setCellValue('G' . $labelsRow, 'Certified/Noted by:');
         $sheet->setCellValue('J' . $labelsRow, 'Funds available:');
         $sheet->setCellValue('M' . $labelsRow, 'Approved for Payment:');
-        $sheet->getStyle('B' . $labelsRow . ':N' . $labelsRow)->getFont()->setSize(9);
         $sheet->getStyle('B' . $labelsRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle('D' . $labelsRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle('G' . $labelsRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle('J' . $labelsRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle('M' . $labelsRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        
-        $currentRow = $labelsRow + 1;
+
+        $currentRow = $labelsRow + 2;
 
         $currentRow++;
         $namesRow = $currentRow;
@@ -477,9 +414,9 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
 
         $approvedName = strtoupper($assigned?->approved?->name ?? 'RELLY B. GARCIA');
         $sheet->mergeCells('M' . $namesRow . ':N' . $namesRow)->setCellValue('M' . $namesRow, $approvedName);
-        
-        $sheet->getStyle('B' . $namesRow . ':N' . $namesRow)->getFont()->setBold(true)->setSize(9);
-        
+
+        $sheet->getStyle('B' . $namesRow . ':N' . $namesRow)->getFont()->setBold(true);
+
         $currentRow++;
         $designationsRow = $currentRow;
 
@@ -498,8 +435,8 @@ class PayrollExport implements ShouldAutoSize, WithColumnWidths, WithEvents
         $approvedDesignation = $assigned?->approved?->designation ?? 'Regional Director';
         $sheet->mergeCells('M' . $designationsRow . ':N' . $designationsRow)->setCellValue('M' . $designationsRow, $approvedDesignation);
 
-        $sheet->getStyle('B' . $designationsRow . ':N' . $designationsRow)->getFont()->setSize(9);
-        
+        // $sheet->getStyle('B' . $designationsRow . ':N' . $designationsRow)->getFont()->setSize(9);
+
         $currentRow = $designationsRow;
     }
 
