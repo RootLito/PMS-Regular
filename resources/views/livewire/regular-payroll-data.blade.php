@@ -1,5 +1,5 @@
 <div class="flex-1 flex-col relative gap-2">
-    <div class="w-full flex justify-between items-center mb-6 p-6 bg-white rounded-xl">
+    <div class="w-full flex justify-between items-center mb-6 p-6 bg-white rounded-xl shadow-sm">
         <h2 class="font-black text-gray-700">PAYROLL SUMMARY</h2>
         <div class="flex text-sm gap-2">
             {{-- Office Selection Dropdown --}}
@@ -70,7 +70,7 @@
 
         </div>
     </div>
-    <div class="bg-white p-6 min-h-100 rounded-xl">
+    <div class="bg-white p-6 min-h-100 rounded-xl shadow-sm">
 
         <div id="payrollContent">
             <div class="w-full flex justify-center items-center gap-6 mb-2">

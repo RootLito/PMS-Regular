@@ -9,6 +9,13 @@ class Contribution extends Model
     protected $table = 'regular_contributions';
     protected $fillable = [
         'employee_id',
+
+        'first_half',
+        'second_half',
+        'total_net_amount',
+
+
+
         'tax',
         'phic',
         'gsis_ps',
@@ -40,6 +47,10 @@ class Contribution extends Model
         'pera',
         'gross',
         'rate_per_month',
+
+        'gsis_gs',
+
+
         'leave_wo',
     ];
 

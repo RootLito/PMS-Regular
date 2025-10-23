@@ -17,15 +17,16 @@ class RegularContributionData extends Component
     public $sortOrder = '';
     public $deletingId = null;
     public $offices = [];
+    public $pera = 2000;
+
 
     public $selectedEmployee = null;
+    public $monthly_rate;
 
     public $tax, $phic, $gsis_ps, $hdmf_ps, $hdmf_mp2, $hdmf_mpl, $hdmf_hl, $gsis_pol, $gsis_consoloan,
         $gsis_emer, $gsis_cpl, $gsis_gfal, $g_mpl, $g_lite, $bfar_provident, $dareco, $ucpb_savings,
         $isda_savings_loan, $isda_savings_cap_con, $tagumcoop_sl, $tagum_coop_cl, $tagum_coop_sc,
-        $tagum_coop_rs, $tagum_coop_ers_gasaka_suretech_etc, $nd, $lbp_sl, $total_charges,
-        $total_salary, $gross, $rate_per_month, $leave_wo;
-    public $pera = 2000;
+        $tagum_coop_rs, $tagum_coop_ers_gasaka_suretech_etc, $nd, $lbp_sl, $leave_wo;
 
     protected $rules = [
         'tax' => 'nullable|numeric',
@@ -54,11 +55,7 @@ class RegularContributionData extends Component
         'tagum_coop_ers_gasaka_suretech_etc' => 'nullable|numeric',
         'nd' => 'nullable|numeric',
         'lbp_sl' => 'nullable|numeric',
-        'total_charges' => 'nullable|numeric',
-        'total_salary' => 'nullable|numeric',
         'pera' => 'nullable|numeric',
-        'gross' => 'nullable|numeric',
-        'rate_per_month' => 'nullable|numeric',
         'leave_wo' => 'nullable|numeric',
     ];
 
@@ -71,6 +68,9 @@ class RegularContributionData extends Component
     public function employeeSelected($employeeId)
     {
         $this->selectedEmployee = $employeeId;
+        $employee = Employee::find($employeeId);
+
+        $this->monthly_rate = $employee->monthly_rate;
 
         $contribution = Contribution::where('employee_id', $employeeId)->first();
 
@@ -101,20 +101,15 @@ class RegularContributionData extends Component
             $this->tagum_coop_ers_gasaka_suretech_etc = $contribution->tagum_coop_ers_gasaka_suretech_etc;
             $this->nd = $contribution->nd;
             $this->lbp_sl = $contribution->lbp_sl;
-            $this->total_charges = $contribution->total_charges;
-            $this->total_salary = $contribution->total_salary;
-            // $this->pera = $contribution->pera;
+            $this->leave_wo = $contribution->leave_wo;
             if (!is_null($contribution->pera) && $contribution->pera != 0) {
                 $this->pera = $contribution->pera;
             }
-
-            $this->gross = $contribution->gross;
-            $this->rate_per_month = $contribution->rate_per_month;
-            $this->leave_wo = $contribution->leave_wo;
         } else {
             $this->resetContributionFields();
         }
     }
+
 
     protected function resetContributionFields()
     {
@@ -144,21 +139,69 @@ class RegularContributionData extends Component
         $this->tagum_coop_ers_gasaka_suretech_etc = null;
         $this->nd = null;
         $this->lbp_sl = null;
-        $this->total_charges = null;
-        $this->total_salary = null;
         $this->pera = null;
-        $this->gross = null;
-        $this->rate_per_month = null;
         $this->leave_wo = null;
     }
+
 
     public function save()
     {
         $this->validate();
 
+        if (is_null($this->pera)) {
+            $this->pera = 2000;
+        }
+
+        $rate_per_month = $this->monthly_rate;
+
+        $gross = $this->monthly_rate + $this->pera;
+
+        $total_salary = $gross;
+
+        $total_charges =
+            ($this->tax ?? 0)
+            + ($this->phic ?? 0)
+            + ($this->gsis_ps ?? 0)
+            + ($this->hdmf_ps ?? 0)
+            + ($this->hdmf_mp2 ?? 0)
+            + ($this->hdmf_mpl ?? 0)
+            + ($this->hdmf_hl ?? 0)
+            + ($this->gsis_pol ?? 0)
+            + ($this->gsis_consoloan ?? 0)
+            + ($this->gsis_emer ?? 0)
+            + ($this->gsis_cpl ?? 0)
+            + ($this->gsis_gfal ?? 0)
+            + ($this->g_mpl ?? 0)
+            + ($this->g_lite ?? 0)
+            + ($this->bfar_provident ?? 0)
+            + ($this->dareco ?? 0)
+            + ($this->ucpb_savings ?? 0)
+            + ($this->isda_savings_loan ?? 0)
+            + ($this->isda_savings_cap_con ?? 0)
+            + ($this->tagumcoop_sl ?? 0)
+            + ($this->tagum_coop_cl ?? 0)
+            + ($this->tagum_coop_sc ?? 0)
+            + ($this->tagum_coop_rs ?? 0)
+            + ($this->tagum_coop_ers_gasaka_suretech_etc ?? 0)
+            + ($this->nd ?? 0)
+            + ($this->lbp_sl ?? 0);
+
+        $total_net_amount = $gross - $total_charges;
+
+        $first_half = $total_net_amount / 2;
+
+        $second_half = $total_net_amount / 2;
+
+        $gsis_gs = $rate_per_month * 0.12;
+
+
         $contribution = Contribution::updateOrCreate(
             ['employee_id' => $this->selectedEmployee],
             [
+                'first_half' => $first_half,
+                'second_half' => $second_half,
+                'total_net_amount' => $total_net_amount,
+
                 'tax' => $this->tax,
                 'phic' => $this->phic,
                 'gsis_ps' => $this->gsis_ps,
@@ -185,11 +228,14 @@ class RegularContributionData extends Component
                 'tagum_coop_ers_gasaka_suretech_etc' => $this->tagum_coop_ers_gasaka_suretech_etc,
                 'nd' => $this->nd,
                 'lbp_sl' => $this->lbp_sl,
-                'total_charges' => $this->total_charges,
-                'total_salary' => $this->total_salary,
+
+                'total_charges' => $total_charges,
+                'total_salary' => $total_salary,
                 'pera' => $this->pera,
-                'gross' => $this->gross,
-                'rate_per_month' => $this->rate_per_month,
+                'gross' => $gross,
+                'rate_per_month' => $rate_per_month,
+                'gsis_gs' => $gsis_gs,
+
                 'leave_wo' => $this->leave_wo,
             ]
         );

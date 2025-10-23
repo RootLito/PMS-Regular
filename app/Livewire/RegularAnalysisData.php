@@ -23,7 +23,7 @@ class RegularAnalysisData extends Component
 
     public function render()
     {
-        $employees = Employee::query()
+        $employees = Employee::with('contribution')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('last_name', 'like', '%' . $this->search . '%')
@@ -44,6 +44,8 @@ class RegularAnalysisData extends Component
                 . ($employee->suffix ? ' ' . $employee->suffix : '')
                 . ($employee->middle_initial ? ', ' . $employee->middle_initial : '');
         }
+
+        // dd($employees);
 
         return view('livewire.regular-analysis-data', [
             'employees' => $employees,

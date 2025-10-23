@@ -1,6 +1,6 @@
 <div class="flex-1 flex gap-10">
     {{-- LEFT PANEL - Add and List Signatories --}}
-    <div class="flex flex-col h-full w-1/2 bg-white p-6 rounded-xl">
+    <div class="flex flex-col h-full w-1/2 bg-white p-6 rounded-xl shadow-sm">
         {{-- ADD SIGNATORY FORM --}}
         <form wire:submit.prevent="save" class="w-full flex flex-col">
             <h2 class="text-xl text-gray-700 font-bold mb-6">Add Signatory</h2>
@@ -103,7 +103,7 @@
     </div>
 
     {{-- RIGHT PANEL - Assign Signatory --}}
-    <div class="flex flex-col h-full w-1/2 bg-white p-6 rounded-xl">
+    <div class="flex flex-col h-full w-1/2 bg-white p-6 rounded-xl shadow-sm">
         <form wire:submit.prevent="saveSignatory" class="w-full flex flex-col">
             <h2 class="text-xl text-gray-700 font-bold mb-6">Assign Signatory</h2>
 

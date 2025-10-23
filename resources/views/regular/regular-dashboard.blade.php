@@ -10,7 +10,7 @@
             </h2>
         </div>
         {{-- @livewire('dashboard-data') --}}
-        <div class="w-full h-full bg-white rounded-lg">
+        <div class="w-full h-full bg-white rounded-lg shadow-sm">
 
         </div>
     </div>
