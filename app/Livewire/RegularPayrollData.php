@@ -20,8 +20,9 @@ class RegularPayrollData extends Component
     public array $office = [];
     public bool $showOffices = false;
     public $month;
-    public $year;
     public $months = [];
+
+    public $year;
     public $years = [];
     public $assigned;
     public $dateRange;

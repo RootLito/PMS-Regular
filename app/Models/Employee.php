@@ -31,6 +31,6 @@ class Employee extends Model
 
     public function officeDetails()
     {
-        return $this->hasOne(Office::class, 'office', 'office');
+        return $this->belongsTo(Office::class, 'office', 'office');
     }
 }
