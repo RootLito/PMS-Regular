@@ -26,7 +26,7 @@
                         @else
                         <td class="px-4"></td>
                         <td class="px-4"></td>
-                        @endif  
+                        @endif
                         </tr>
                         @endfor
                 </tbody>
@@ -114,5 +114,30 @@
                 Confirm
             </button>
         </form>
+
+
+        <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="leaveTypes">
+            <h2 class="text-gray-700 font-bold mb-4">Leave Types</h2>
+
+            <div>
+                <label class="block text-sm text-gray-700">Abbreviation</label>
+                <input type="text" wire:model="abbreviation"
+                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
+                @error('abbreviation') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="mt-2">
+                <label class="block text-sm text-gray-700">Leave Type</label>
+                <input type="text" wire:model="leave_type"
+                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
+                @error('leave_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+
+            <button type="submit"
+                class="w-full bg-slate-700 text-white py-2 rounded-md hover:bg-slate-500 cursor-pointer mt-2 mb-2">
+                Confirm
+            </button>
+        </form>
+
     </div>
 </div>

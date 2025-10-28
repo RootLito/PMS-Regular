@@ -50,7 +50,7 @@
                     <td></td>
                     <td></td>
                     <td class="px-4 py-2 flex gap-2">
-                        @if ($deletingId === $employee->id)
+                        {{-- @if ($deletingId === $employee->id)
                         <button wire:click="cancelDelete"
                             class="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600 cursor-pointer"
                             title="Cancel Delete">
@@ -62,13 +62,14 @@
                             <i class="fas fa-check"></i>
                         </button>
                         @else
+
+                        @endif --}}
+
                         <a href="{{ url('/regular-credits/update', ['id' => $employee->id]) }}"
-                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded flex justify-center items-center gap-1 cursor-pointer w-full"
+                            class="bg-slate-700 hover:bg-slate-900 text-white px-3 py-1 rounded flex justify-center items-center gap-1 cursor-pointer w-full"
                             title="Edit">
                             <i class="fas fa-edit"></i> Edit
                         </a>
-
-                        @endif
                     </td>
                 </tr>
                 @empty

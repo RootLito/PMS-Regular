@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\LeaveCredit;
+use App\Models\LeaveType;
 
 class LeaveCreditsConfig extends Component
 {
@@ -18,6 +19,10 @@ class LeaveCreditsConfig extends Component
     public $days = [];
     public $months = [];
 
+    public $abbreviation;
+    public $leave_type;
+
+
     public function mount()
     {
         $config = LeaveCredit::first();
@@ -30,6 +35,7 @@ class LeaveCreditsConfig extends Component
 
         $this->getHourDayBaseProperty();
         $this->getLeaveWithPayProperty();
+
     }
 
     public function hourDayBase()
@@ -124,7 +130,17 @@ class LeaveCreditsConfig extends Component
 
 
 
+    public function leaveTypes()
+    {
+        $validated = $this->validate([
+            'abbreviation' => 'required|string|max:10|unique:leave_types,abbreviation',
+            'leave_type' => 'required|string|max:100',
+        ]);
 
+        LeaveType::create($validated);
+        $this->dispatch('success', message: 'Leave Type added successfully!');
+        $this->reset(['abbreviation', 'leave_type']);
+    }
 
     public function render()
     {

@@ -5,10 +5,9 @@
         </h2>
 
         <div class="flex items-center gap-4">
-            {{-- Filter --}}
             <select wire:model.live="startYear" id="startYear"
                 class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
-                <option value="">Select Start Year</option>
+                <option value="" disabled>Select Start Year</option>
                 @foreach($years as $year)
                 <option value="{{ $year }}">{{ $year }}</option>
                 @endforeach
@@ -16,7 +15,7 @@
             <span class="text-2xl">-</span>
             <select wire:model.live="endYear" id="endYear"
                 class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
-                <option value="">Select End Year</option>
+                <option value="" disabled>Select End Year</option>
                 @foreach($years as $year)
                 <option value="{{ $year }}">{{ $year }}</option>
                 @endforeach
@@ -31,16 +30,76 @@
             <form action="" class="flex flex-col mt-4">
                 @csrf
 
-                <label for="" class="mt-4 text-sm">Period</label>
-                <input type="text" id="last_name" wire:model="last_name"
-                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-                @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+
+                <div class="w-full flex gap-2">
+                    <div class="flex flex-col w-100s">
+                        <label for="" class="mt-4 text-sm">Period</label>
+                        <input type="text" id="last_name" wire:model="last_name"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                        @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="" class="mt-4 text-sm">From</label>
+                        <input type="text" id="last_name" wire:model="last_name"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                        @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="" class="mt-4 text-sm">To</label>
+                        <input type="text" id="last_name" wire:model="last_name"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                        @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
 
 
-                <label for="" class="mt-4 text-sm">Particulars</label>
-                <input type="text" id="last_name" wire:model="last_name"
-                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-                @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+
+
+                <div class="w-full flex gap-2">
+                    <div class="flex flex-col w-100">
+                        <label for="" class="mt-4 text-sm">Particulars</label>
+                        <select wire:model="selected_leave"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
+                            <option value="">-- Code --</option>
+                            @foreach ($leaveTypes as $type)
+                            <option value="{{ $type->abbreviation }}">{{ $type->leave_type }}</option>
+                            @endforeach
+                        </select>
+                        @error('selected_leave')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <div class="flex flex-col w-14">
+                            <label for="" class="mt-4 text-sm">Day(s)</label>
+                            <input type="text" id="last_name" wire:model="last_name"
+                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                            @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+
+                        <span class="mt-10">-</span>
+
+                        <div class="flex flex-col w-14">
+                            <label for="" class="mt-4 text-sm">Hour(s)</label>
+                            <input type="text" id="last_name" wire:model="last_name"
+                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                            @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+
+                        <span class="mt-10">-</span>
+
+                        <div class="flex flex-col w-14">
+                            <label for="" class="mt-4 text-sm">Minute(s)</label>
+                            <input type="text" id="last_name" wire:model="last_name"
+                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                            @error('last_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
 
                 <label for="" class="mt-4 text-sm">Remarks</label>
                 <textarea id="" wire:model=""
