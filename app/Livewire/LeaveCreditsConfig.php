@@ -144,6 +144,9 @@ class LeaveCreditsConfig extends Component
 
     public function render()
     {
-        return view('livewire.leave-credits-config');
+        $leaveTypes = LeaveType::all();
+        return view('livewire.leave-credits-config',[
+            'leaveTypes' => $leaveTypes
+        ]);
     }
 }

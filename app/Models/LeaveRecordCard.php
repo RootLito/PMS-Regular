@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class LeaveRecordCard extends Model
 {
     protected $fillable = [
+        'date_transferred',
         'employee_id',
         'period',
         'particulars',

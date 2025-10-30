@@ -15,22 +15,24 @@ return new class extends Migration
             $table->id();
 
             $table->unsignedBigInteger('employee_id');
-            $table->string('period');
-            $table->string('particulars');
-            $table->string('particulars_type');
+            $table->string('date_transferred')->nullable();
 
-            $table->decimal('earned_vacation', 8, 3);
-            $table->decimal('balance_vacation', 8, 3);
-            $table->decimal('absence_w_vacation', 8, 3);
-            $table->decimal('absence_wo_vacation', 8, 3);
+            $table->string('period')->nullable();
+            $table->string('particulars')->nullable();
+            $table->string('particulars_type')->nullable();
 
-            $table->decimal('earned_sick', 8, 3);
-            $table->decimal('balance_sick', 8, 3);
-            $table->decimal('absence_w_sick', 8, 3);
-            $table->decimal('absence_wo_sick', 8, 3);
+            $table->decimal('earned_vacation', 8, 3)->nullable();
+            $table->decimal('balance_vacation', 8, 3)->nullable();
+            $table->decimal('absence_w_vacation', 8, 3)->nullable();
+            $table->decimal('absence_wo_vacation', 8, 3)->nullable();
 
-            $table->string('status');
-            $table->string('remarks');
+            $table->decimal('earned_sick', 8, 3)->nullable();
+            $table->decimal('balance_sick', 8, 3)->nullable();
+            $table->decimal('absence_w_sick', 8, 3)->nullable();
+            $table->decimal('absence_wo_sick', 8, 3)->nullable();
+
+            $table->string('status')->nullable();
+            $table->string('remarks')->nullable();
 
             $table->timestamps();
 

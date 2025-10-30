@@ -412,7 +412,27 @@ class RegularPayrollData extends Component
 
 
 
-        $overallTotal = [];
+        $overallTotal = [
+            'monthly_rate' => 0,
+            'pera' => 0,
+            'tax' => 0,
+            'phic' => 0,
+            'gsis_ps' => 0,
+            'hdmf_ps' => 0,
+            'hdmf_mp2' => 0,
+            'totalFive' => 0,
+            'totalOthers' => 0,
+            'uacs' => 0,
+            'grandTotalSalary' => 0,
+            'otherTotal' => 0,
+            'totalDeduction' => 0,
+            'ps_mp2' => 0,
+            'grandTotal' => 0,
+            'netPay' => 0,
+            'firstHalf' => 0,
+            'secondHalf' => 0,
+        ];
+
         foreach ($employeesByOffice as $officeName => $employees) {
             $monthlyRateSum = $employees->sum('monthly_rate');
             $peraSum = $employees->sum(fn($e) => $e->contribution->pera ?? 0);

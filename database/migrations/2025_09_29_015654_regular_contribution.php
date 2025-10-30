@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('regular_contributions', function (Blueprint $table) {
             $table->id();
-
+            
             $table->decimal('tax', 12, 2)->nullable();
             $table->decimal('phic', 12, 2)->nullable();
             $table->decimal('gsis_ps', 12, 2)->nullable();

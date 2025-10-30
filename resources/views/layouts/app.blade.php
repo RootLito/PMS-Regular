@@ -11,7 +11,6 @@
     <link rel="shortcut icon" href="{{ asset('images/bfar.png') }}" type="image/x-icon">
     <style>
         @keyframes blink {
-
             0%,
             100% {
                 opacity: 1;
