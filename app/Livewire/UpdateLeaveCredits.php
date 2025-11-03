@@ -40,40 +40,53 @@ class UpdateLeaveCredits extends Component
         $this->appointed_date = $emp->appointed_date;
         $leaveRecord = LeaveRecordCard::where('employee_id', $id)->first();
 
+
+        // dd($this->appointed_date);
+
+        $appointedYear = Carbon::parse($this->appointed_date)->year;
+        $currentYear = now()->year;
+
         if (!$leaveRecord) {
             $leaveCredit = LeaveCredit::first();
             $leaveWithPay = $leaveCredit->leave_with_pay;
             $monthlyLeave = $leaveWithPay / 12;
             $balanceVacation = 0;
             $balanceSick = 0;
-            $currentYear = now()->year;
 
-            for ($month = 1; $month <= 12; $month++) {
-                $startDate = now()->copy()->setMonth($month)->startOfMonth();
-                $endDate = now()->copy()->setMonth($month)->endOfMonth();
+            for ($year = $appointedYear; $year <= $currentYear; $year++) {
+                for ($month = 1; $month <= 12; $month++) {
 
-                $daysInMonth = $endDate->day;
-                $period = $startDate->format('F') . " 1-{$daysInMonth}";
+                    if ($year == $appointedYear && $month < Carbon::parse($this->appointed_date)->month) {
+                        continue;
+                    }
 
-                $earnedVacation = $monthlyLeave;
-                $earnedSick = $monthlyLeave;
+                    $startDate = Carbon::create($year, $month, 1);
+                    $endDate = $startDate->copy()->endOfMonth();
+                    $daysInMonth = $endDate->day;
 
-                $balanceVacation += $earnedVacation;
-                $balanceSick += $earnedSick;
+                    $period = "{$startDate->format('F')} 1-{$daysInMonth} {$year}";
 
-                LeaveRecordCard::create([
-                    'employee_id' => $id,
-                    'period' => $period,
-                    'earned_vacation' => $earnedVacation,
-                    'balance_vacation' => $balanceVacation,
-                    'earned_sick' => $earnedSick,
-                    'balance_sick' => $balanceSick,
-                    'status' => 'Active',
-                ]);
+                    $earnedVacation = $monthlyLeave;
+                    $earnedSick = $monthlyLeave;
+
+                    $balanceVacation += $earnedVacation;
+                    $balanceSick += $earnedSick;
+
+                    LeaveRecordCard::create([
+                        'employee_id' => $id,
+                        'period' => $period,
+                        'earned_vacation' => $earnedVacation,
+                        'balance_vacation' => $balanceVacation,
+                        'earned_sick' => $earnedSick,
+                        'balance_sick' => $balanceSick,
+                        'status' => 'Active',
+                    ]);
+                }
             }
 
             $this->dispatch(event: 'warning', message: 'No data, credits auto generate');
         }
+
 
         $this->loadData();
     }
@@ -81,16 +94,17 @@ class UpdateLeaveCredits extends Component
     public function loadData()
     {
         $this->leaveRecords = LeaveRecordCard::where('employee_id', $this->id)
-            ->orderByRaw("STR_TO_DATE(period, '%M %Y') IS NULL, STR_TO_DATE(period, '%M %Y') ASC")
+            ->orderByRaw("RIGHT(period, 4) ASC")
             ->orderByRaw("
             FIELD(
                 SUBSTRING_INDEX(period, ' ', 1),
-                'January','February','March','April','May','June','July','August','September','October','November','December'
+                'January','February','March','April','May','June',
+                'July','August','September','October','November','December'
             )
         ")
-            ->orderByRaw("period ASC")
             ->get();
     }
+
 
 
     public function saveRecord()
@@ -109,7 +123,8 @@ class UpdateLeaveCredits extends Component
 
         $particulars = "{$this->leaveDays}-{$this->leaveHours}-{$this->leaveMinutes}";
 
-        LeaveRecordCard::create([
+
+        dd(LeaveRecordCard::create([
             'employee_id' => $this->id,
             'period' => $period,
             'particulars' => $particulars,
@@ -120,7 +135,9 @@ class UpdateLeaveCredits extends Component
             'earned_sick' => 0,
             'balance_sick' => 0,
             'status' => 'Active',
-        ]);
+        ]));
+
+        
 
         $this->dispatch(event: 'success', message: 'Leave record saved successfully!');
         $this->loadData();

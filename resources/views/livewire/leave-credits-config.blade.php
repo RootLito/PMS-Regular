@@ -18,8 +18,8 @@
                             <th class="px-4 py-2 text-nowrap">Leave Earned</th>
                             <th class="px-4 py-2 text-nowrap">Month</th>
                             <th class="px-4 py-2 text-nowrap">Leave Earned</th>
-                            <th class="px-4 py-2 text-nowrap">Vication Leave (WOP)</th>
-                            <th class="px-4 py-2 text-nowrap">Leave Earned</th>
+                            {{-- <th class="px-4 py-2 text-nowrap">Vication Leave (WOP)</th> --}}
+                            {{-- <th class="px-4 py-2 text-nowrap">Leave Earned</th>a --}}
                         </tr>
                     </thead>
                     <tbody>
@@ -121,6 +121,14 @@
             <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="leavePay">
                 <h2 class="text-gray-700 font-bold mb-4">Table 1</h2>
                 <div>
+                    <label class="block text-sm text-gray-700">Year credit (12-month equivalent)</label>
+                    <input type="text" wire:model="leave_with_pay"
+                        class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
+                    @error('leave_with_pay')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
+                </div>
+                {{-- <div>
                     <label class="block text-sm text-gray-700">Leave with Pay <span class="font-bold text-sm">Day/Month
                             (1-30)</span></label>
                     <input type="text" wire:model="leave_with_pay"
@@ -128,8 +136,8 @@
                     @error('leave_with_pay')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
-                </div>
-                <div class="mt-2">
+                </div> --}}
+                {{-- <div class="mt-2">
                     <label class="block text-sm text-gray-700">Leave without Pay <span
                             class="font-bold text-sm">Day/Month
                             (1-30)</span></label>
@@ -138,16 +146,19 @@
                     @error('leave_without_pay')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
-                </div>
+                </div> --}}
                 <button type="submit"
                     class="w-full bg-slate-700 text-white py-2 rounded-md hover:bg-slate-500 cursor-pointer mt-2 mb-2">
                     Confirm
                 </button>
             </form>
+
+
+
             <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="hourDayBase">
                 <h2 class="text-gray-700 font-bold mb-4">Table 2</h2>
                 <div>
-                    <label class="block text-sm text-gray-700">Fullday (8-hour equivalent)</label>
+                    <label class="block text-sm text-gray-700">Fullday credit (8-hour equivalent)</label>
                     <input type="text" wire:model="hour_day_base"
                         class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
                     @error('hour_day_base')

@@ -26,7 +26,7 @@
     </div>
 
     <div class="flex-1 flex gap-10">
-        <div class="w-[400px] bg-white rounded-xl p-6 shadow">
+        <div class="w-[400px] bg-white rounded-xl p-6 shadow self-start">
             <h2 class="font-bold text-gray-600">Create New Record</h2>
             <form wire:submit.prevent="saveRecord" class="flex flex-col mt-4">
                 @csrf
@@ -50,7 +50,7 @@
                                 <option value="{{ $type->abbreviation }}">{{ $type->leave_type }}</option>
                             @endforeach
                         </select>
-                        
+
                     </div>
 
                     <div class="flex items-center gap-1">
@@ -77,19 +77,19 @@
                         </div>
                     </div>
 
-                    
+
                 </div>
 
                 <div class="w-full mt-2">
-                        @if ($errors->has('leaveDays') || $errors->has('leaveHours') || $errors->has('leaveMinutes'))
-                            <span class="text-red-500 text-xs">
-                                {{ $errors->first('selected_leave') }}
-                                {{ $errors->first('leaveDays') }}
-                                {{ $errors->first('leaveHours') }}
-                                {{ $errors->first('leaveMinutes') }}
-                            </span>
-                        @endif
-                    </div>
+                    @if ($errors->has('leaveDays') || $errors->has('leaveHours') || $errors->has('leaveMinutes'))
+                        <span class="text-red-500 text-xs">
+                            {{ $errors->first('selected_leave') }}
+                            {{ $errors->first('leaveDays') }}
+                            {{ $errors->first('leaveHours') }}
+                            {{ $errors->first('leaveMinutes') }}
+                        </span>
+                    @endif
+                </div>
 
 
                 <div class="flex flex-col w-full">
@@ -167,7 +167,21 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php $currentYear = null; @endphp
+
                         @foreach ($leaveRecords as $record)
+                            @php
+                                $year = substr($record->period, -4); 
+                            @endphp
+
+         
+                            @if ($year !== $currentYear)
+                                <tr class="font-bold" style="background-color: #fcd5b4">
+                                    <td colspan="12" class="p-2">YEAR: {{ $year }}</td>
+                                </tr>
+                                @php $currentYear = $year; @endphp
+                            @endif
+
                             <tr class="text-center">
                                 <td class="border border-gray-200 p-1 text-left" width="20%">{{ $record->period }}
                                 </td>
@@ -179,11 +193,11 @@
                                 </td>
                                 <td class="border border-gray-200 p-1">{{ $record->earned_vacation }}</td>
                                 <td class="border border-gray-200 p-1">{{ $record->absence_w_vacation }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->balance_vacation }}</td>
+                                <td class="border border-gray-200 p-1">{{ number_format($record->balance_vacation, 2) }}</td>
                                 <td class="border border-gray-200 p-1">{{ $record->absence_wo_vacation }}</td>
                                 <td class="border border-gray-200 p-1">{{ $record->earned_sick }}</td>
                                 <td class="border border-gray-200 p-1">{{ $record->absence_w_sick }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->balance_sick }}</td>
+                                <td class="border border-gray-200 p-1">{{ number_format($record->balance_sick, 2) }}</td>
                                 <td class="border border-gray-200 p-1">{{ $record->absence_wo_sick }}</td>
                                 <td class="border border-gray-200 p-1">{{ $record->remarks }}</td>
                                 <td class="border border-gray-200 p-1">
@@ -195,6 +209,7 @@
                             </tr>
                         @endforeach
                     </tbody>
+
                 </table>
             </div>
         </div>
