@@ -121,7 +121,7 @@
             <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="leavePay">
                 <h2 class="text-gray-700 font-bold mb-4">Table 1</h2>
                 <div>
-                    <label class="block text-sm text-gray-700">Year credit (12-month equivalent)</label>
+                    <label class="block text-sm text-gray-700">Annual credit (12-month equivalent)</label>
                     <input type="text" wire:model="leave_with_pay"
                         class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
                     @error('leave_with_pay')

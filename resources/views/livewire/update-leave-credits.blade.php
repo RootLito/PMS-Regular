@@ -3,9 +3,7 @@
         <h2 class="text-5xl font-bold text-gray-700">
             LEAVE RECORD
         </h2>
-
-
-        <div class="flex items-center gap-4">
+        {{-- <div class="flex items-center gap-4">
             <select wire:model.live="startYear" id="startYear"
                 class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
                 <option value="" disabled>Select Start Year</option>
@@ -21,94 +19,161 @@
                     <option value="{{ $year }}">{{ $year }}</option>
                 @endforeach
             </select>
-        </div>
+        </div> --}}
 
     </div>
 
     <div class="flex-1 flex gap-10">
-        <div class="w-[400px] bg-white rounded-xl p-6 shadow self-start">
-            <h2 class="font-bold text-gray-600">Create New Record</h2>
-            <form wire:submit.prevent="saveRecord" class="flex flex-col mt-4">
-                @csrf
+        <div class="flex flex-col w-[400px] self-start gap-10">
+            {{-- NEW RECORD   --}}
+            <div class="flex flex-col bg-white rounded-xl p-6 shadow ">
+                <h2 class="font-bold text-gray-600">Create New Record</h2>
+                <form wire:submit.prevent="saveRecord" class="flex flex-col mt-2">
+                    @csrf
 
-                <div class="flex flex-col w-full">
-                    <label for="period" class="mt-4 text-sm">Period</label>
-                    <input type="text" id="period" wire:model="period"
-                        class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-                    @error('period')
-                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                    @enderror
-                </div>
 
-                <div class="w-full flex gap-2">
-                    <div class="flex flex-col">
-                        <label for="selected_leave" class="mt-4 text-sm">Particulars</label>
-                        <select wire:model="selected_leave" id="selected_leave"
-                            class="mt-1 flex-1 h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
-                            <option value="">-- Code --</option>
-                            @foreach ($leaveTypes as $type)
-                                <option value="{{ $type->abbreviation }}">{{ $type->leave_type }}</option>
+                    <p class="mt-2 text-sm font-semibold text-gray-700">Leave Type</p>
+                    <select wire:model.live="leave" id="leave"
+                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
+                        <option value="" disabled selected>Select Leave</option>
+                        <option value="vacation_leave">Vacation Leave</option>
+                        <option value="sick_leave">Sick Leave</option>
+                    </select>
+
+
+                    <p class="mt-2 text-sm font-semibold text-gray-700">Period</p>
+                    <div class="w-full flex gap-2">
+                        <div class="flex flex-col w-full">
+                            {{-- <label for="period_month" class="mt-2 text-sm">Month</label> --}}
+                            <select wire:model="period_month" id="period_month"
+                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+
+                                <option value="" disabled>Select Month</option>
+                                @foreach ($months as $m)
+                                    <option value="{{ $m['num'] }}">{{ $m['name'] }}</option>
+                                @endforeach
+
+                            </select>
+
+                            @error('period_month')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+
+                        </div>
+                        <div class="flex flex-col w-full">
+                            {{-- <label for="period_day" class="mt-2 text-sm">Days</label> --}}
+                            <input type="text" id="period_day" wire:model="period_day"
+                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+
+                            @error('period_day')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <select wire:model.live="period_year" id="period_year"
+                            class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-[96px] mt-1">
+                            <option value="" disabled>Select Year</option>
+                            @foreach ($years as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
                             @endforeach
                         </select>
-
-                    </div>
-
-                    <div class="flex items-center gap-1">
-                        <div class="flex flex-col w-14">
-                            <label for="leaveDays" class="mt-4 text-sm">Days</label>
-                            <input type="number" wire:model="leaveDays" id="leaveDays"
-                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-                        </div>
-
-                        <span class="mt-10">-</span>
-
-                        <div class="flex flex-col w-14">
-                            <label for="leaveHours" class="mt-4 text-sm">Hours</label>
-                            <input type="number" wire:model="leaveHours" id="leaveHours"
-                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-                        </div>
-
-                        <span class="mt-10">-</span>
-
-                        <div class="flex flex-col w-14">
-                            <label for="leaveMinutes" class="mt-4 text-sm">Minutes</label>
-                            <input type="number" wire:model="leaveMinutes" id="leaveMinutes"
-                                class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-                        </div>
                     </div>
 
 
-                </div>
 
-                <div class="w-full mt-2">
+
+                    <div class="w-full flex gap-2">
+                        <div class="flex flex-col flex-1">
+                            <label for="selected_leave"
+                                class="mt-2 text-sm  font-semibold text-gray-700">Particulars</label>
+                            <select wire:model="selected_leave" id="selected_leave"
+                                class="mt-1 flex-1 h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
+                                <option value="">-- Code --</option>
+                                @foreach ($leaveTypes as $type)
+                                    <option value="{{ $type->abbreviation }}">{{ $type->leave_type }}</option>
+                                @endforeach
+                            </select>
+
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <div class="flex flex-col w-14">
+                                <label for="leaveDays" class="mt-2 text-sm  font-semibold text-gray-700">Days</label>
+                                <input type="number" wire:model="leaveDays" id="leaveDays"
+                                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                            </div>
+
+                            <span class="mt-10">-</span>
+
+                            <div class="flex flex-col w-14">
+                                <label for="leaveHours" class="mt-2 text-sm  font-semibold text-gray-700">Hours</label>
+                                <input type="number" wire:model="leaveHours" id="leaveHours"
+                                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                            </div>
+
+                            <span class="mt-10">-</span>
+
+                            <div class="flex flex-col w-14">
+                                <label for="leaveMinutes"
+                                    class="mt-2 text-sm  font-semibold text-gray-700">Minutes</label>
+                                <input type="number" wire:model="leaveMinutes" id="leaveMinutes"
+                                    class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                            </div>
+                        </div>
+                    </div>
+
                     @if ($errors->has('leaveDays') || $errors->has('leaveHours') || $errors->has('leaveMinutes'))
-                        <span class="text-red-500 text-xs">
-                            {{ $errors->first('selected_leave') }}
-                            {{ $errors->first('leaveDays') }}
-                            {{ $errors->first('leaveHours') }}
-                            {{ $errors->first('leaveMinutes') }}
-                        </span>
+                        <div class="w-full mt-2">
+                            <span class="text-red-500 text-xs">
+                                {{ $errors->first('selected_leave') }}
+                                {{ $errors->first('leaveDays') }}
+                                {{ $errors->first('leaveHours') }}
+                                {{ $errors->first('leaveMinutes') }}
+                            </span>
+                        </div>
                     @endif
-                </div>
 
 
-                <div class="flex flex-col w-full">
-                    <label for="remarks" class="mt-4 text-sm">Remarks</label>
-                    <textarea wire:model="remarks" id="remarks"
-                        class="mt-1 block w-full h-32 border border-gray-200 bg-gray-50 rounded-md p-2 resize-none"></textarea>
-                    @error('remarks')
-                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                    @enderror
-                </div>
+                    <div class="flex flex-col w-full">
+                        <label for="remarks" class="mt-2 text-sm  font-semibold text-gray-700">Remarks</label>
+                        <textarea wire:model="remarks" id="remarks"
+                            class="mt-1 block w-full h-24 text-sm border border-gray-200 bg-gray-50 rounded-md p-2 resize-none"></textarea>
+                        @error('remarks')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
 
-                <button type="submit"
-                    class="w-full bg-slate-700 text-white py-2 rounded-md hover:bg-slate-500 cursor-pointer mt-4">
-                    Apply
-                </button>
-            </form>
+                    <button type="submit"
+                        class="w-full bg-slate-700 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer mt-2">
+                        Create Record
+                    </button>
+                </form>
+            </div>
+
+
+            {{-- GENERATE ANNUAL --}}
+            <div class="flex flex-col bg-white rounded-xl p-6 shadow ">
+                <form wire:submit.prevent="generateAnnualCredits">
+                    @csrf
+                    <h2 class="font-bold text-gray-600">Generate Annual Credits</h2>
+                    <select wire:model.live="annualCredits" id="annualCredits"
+                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
+                        <option value="" disabled>Select Year</option>
+                        @foreach ($years as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit"
+                        class="w-full bg-slate-700 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer mt-2">
+                        Generate
+                    </button>
+                </form>
+            </div>
+
+
 
         </div>
-        <div class="flex-1 bg-white p-6 rounded-xl shadow">
+        <div class="flex-1 bg-white p-6 rounded-xl shadow self-start">
             <div class="flex w-full justify-between">
                 <div class="flex flex-col text-xs">
                     <div class="flex">
@@ -129,22 +194,21 @@
                     </div>
                 </div>
                 <div class="flex flex-col">
-                    {{-- <div class="flex">
-                        <span>NAME: </span>
-                        <span>{{ $fullname }}</span>
-                    </div>
-                    <div class="flex">
-                        <span>OFFICE:</span>
-                        <span>{{ $office }}</span>
-                    </div> --}}
+                    <select wire:model.live="endYear" id="endYear"
+                        class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
+                        <option value="">All Year</option>
+                        @foreach ($years as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
             <div class="overflow-auto mt-6">
-                <table class="min-w-full table-fixed border border-gray-200 text-xs">
+                <table class="min-w-full table-fixed border border-gray-200 text-xs mb-2">
                     <thead>
                         <tr class="bg-gray-100 text-center">
-                            <th rowspan="2" class="border border-gray-200 p-2 w-24 align-middle" width="25%">
+                            <th rowspan="2" class="border border-gray-200 p-2 w-24 align-middle" width="30%">
                                 PERIOD</th>
                             <th rowspan="2" class="border border-gray-200 p-2 w-32 align-middle">PARTICULARS</th>
                             <th colspan="4" class="border border-gray-200 p-2">VACATION LEAVE</th>
@@ -167,49 +231,72 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php $currentYear = null; @endphp
+                        @php
+                            $lastYear = null;
+                        @endphp
 
-                        @foreach ($leaveRecords as $record)
-                            @php
-                                $year = substr($record->period, -4); 
-                            @endphp
-
-         
-                            @if ($year !== $currentYear)
-                                <tr class="font-bold" style="background-color: #fcd5b4">
-                                    <td colspan="12" class="p-2">YEAR: {{ $year }}</td>
+                        @forelse ($leaveRecords as $rec)
+                            @if ($lastYear !== $rec['period_year'])
+                                <tr class="bg-slate-700 text-center">
+                                    <td colspan="11" class="p-2 text-left text-white font-bold">
+                                        {{ $rec['period_year'] }}
+                                    </td>
+                                    <td class="p-2">
+                                        <button
+                                            class="text-red-500 text-xs bg-white p-1 rounded w-full">Delete</button>
+                                    </td>
                                 </tr>
-                                @php $currentYear = $year; @endphp
+                                @php
+                                    $lastYear = $rec['period_year'];
+                                @endphp
                             @endif
 
                             <tr class="text-center">
-                                <td class="border border-gray-200 p-1 text-left" width="20%">{{ $record->period }}
+                                <td class="border border-gray-200 p-1 text-left whitespace-nowrap">
+                                    {{ $rec['period'] }}</td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ $rec['particulars'] ?? '' }}</td>
+
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ isset($rec['earned_vacation']) ? number_format($rec['earned_vacation'], 2) : '' }}
                                 </td>
-                                <td class="border border-gray-200 p-1">
-                                    <div class="flex-1 flex justify-between">
-                                        <span>{{ $record->particulars_type }}</span>
-                                        <span>{{ $record->particulars }}</span>
-                                    </div>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ $rec['absence_w_vacation'] ?? '' }}
                                 </td>
-                                <td class="border border-gray-200 p-1">{{ $record->earned_vacation }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->absence_w_vacation }}</td>
-                                <td class="border border-gray-200 p-1">{{ number_format($record->balance_vacation, 2) }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->absence_wo_vacation }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->earned_sick }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->absence_w_sick }}</td>
-                                <td class="border border-gray-200 p-1">{{ number_format($record->balance_sick, 2) }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->absence_wo_sick }}</td>
-                                <td class="border border-gray-200 p-1">{{ $record->remarks }}</td>
-                                <td class="border border-gray-200 p-1">
-                                    <select class="w-full">
-                                        <option value="">Status</option>
-                                        <option value="">Cancelled</option>
-                                    </select>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ isset($rec['balance_vacation']) ? number_format($rec['balance_vacation'], 2) : '' }}
+                                </td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ $rec['absence_wo_vacation'] ?? '' }}
+                                </td>
+
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ isset($rec['earned_sick']) ? number_format($rec['earned_sick'], 2) : '' }}
+                                </td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ $rec['absence_w_sick'] ?? '' }}
+                                </td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ isset($rec['balance_sick']) ? number_format($rec['balance_sick'], 2) : '' }}
+                                </td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ $rec['absence_wo_sick'] ?? '' }}
+                                </td>
+
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ $rec['date_transferred'] ?? '' }}</td>
+
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    <button class="text-blue-500 text-xs mr-2">Edit</button>
+                                    <button class="text-red-500 text-xs">Delete</button>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="12" class="text-center p-2 text-gray-500">No records found</td>
+                            </tr>
+                        @endforelse
                     </tbody>
-
                 </table>
             </div>
         </div>
