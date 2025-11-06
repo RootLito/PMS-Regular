@@ -9,8 +9,7 @@ use App\Models\LeaveType;
 class LeaveCreditsConfig extends Component
 {
     public $hour_day_base;
-    public $leave_with_pay;
-    public $leave_without_pay;
+    public $month_base;
 
 
     public $hours = [];
@@ -22,19 +21,18 @@ class LeaveCreditsConfig extends Component
     public $abbreviation;
     public $leave_type;
 
+    public $hourly_base = [];
+    public $monthly_base = [];
+
 
     public function mount()
     {
         $config = LeaveCredit::first();
-        if ($config) {
-            $this->hour_day_base = $config->hour_day_base;
-            $this->leave_with_pay = $config->leave_with_pay;
-            $this->leave_without_pay = $config->leave_without_pay;
-        }
+
 
 
         $this->getHourDayBaseProperty();
-        $this->getLeaveWithPayProperty();
+        $this->getMonthBaseProperty();
 
     }
 
@@ -44,89 +42,73 @@ class LeaveCreditsConfig extends Component
             'hour_day_base' => 'required|integer|min:1',
         ]);
 
+        $result = [];
+        for ($i = 1; $i <= $this->hour_day_base; $i++) {
+            $result[$i] = number_format($i / $this->hour_day_base, 3);
+        }
+
         LeaveCredit::updateOrCreate(
             ['id' => 1],
-            ['hour_day_base' => $this->hour_day_base]
+            ['hourly_base' => $result] // ✅ NO JSON_ENCODE
         );
 
-        $this->dispatch('success', message: 'Leave credits saved successfully!');
-        $this->getHourDayBaseProperty();
+        $this->dispatch('success', message: 'Hourly base JSON saved!');
     }
 
-    public function leavePay()
+
+    public function monthBase()
     {
         $this->validate([
-            'leave_with_pay' => 'required|integer|min:1|max:30',
-            'leave_without_pay' => 'required|integer|min:1|max:30',
+            'month_base' => 'required|integer|min:1|max:30',
         ]);
+
+        $monthly = $this->month_base / 12;
+
+        $result = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $result[$i] = number_format($monthly * $i, 3);
+        }
 
         LeaveCredit::updateOrCreate(
             ['id' => 1],
-            [
-                'leave_with_pay' => $this->leave_with_pay,
-                'leave_without_pay' => $this->leave_without_pay,
-            ]
+            ['monthly_base' => $result] 
         );
 
-        $this->dispatch('success', message: 'Leave credits saved successfully!');
-        $this->getLeaveWithPayProperty();
+        $this->dispatch('success', message: 'Monthly base JSON saved!');
     }
+
+
 
 
     public function getHourDayBaseProperty()
     {
-        $config = LeaveCredit::first();
-        $hourDayBase = $config && $config->hour_day_base > 0 ? $config->hour_day_base : 8;
-        $this->hours = [];
-        $this->minutesLeft = [];
-        $this->minutesRight = [];
-        for ($h = 1; $h <= 8; $h++) {
-            $value = number_format($hourDayBase * ($h / 8), 3, '.', '');
-            $this->hours[] = [
-                'hour' => $h,
-                'equiv' => ltrim($value, '0'),
-            ];
-        }
-        for ($i = 1; $i <= 30; $i++) {
-            $this->minutesLeft[] = [
-                'minute' => $i,
-                'equiv' => number_format($i / 60 * ($hourDayBase / 8), 3),
-            ];
-            $this->minutesRight[] = [
-                'minute' => $i + 30,
-                'equiv' => number_format(($i + 30) / 60 * ($hourDayBase / 8), 3),
-            ];
+        $credit = LeaveCredit::find(1);
+
+        if ($credit && $credit->hourly_base) {
+            $this->hourly_base = json_decode($credit->hourly_base, true);
+
+            // dd('Hourly Base:', $this->hourly_base);
+        } else {
+            $this->hourly_base = [];
+            // dd('Hourly Base Empty', $this->hourly_base);
         }
     }
 
 
-    public function getLeaveWithPayProperty()
+    public function getMonthBaseProperty()
     {
-        $config = LeaveCredit::first();
-        $leaveWithPay = $config ? $config->leave_with_pay : 0;
+        $credit = LeaveCredit::find(1);
 
-        $this->days = [];
-        $this->months = [];
+        if ($credit && $credit->monthly_base) {
+            $this->monthly_base = json_decode($credit->monthly_base, true);
 
-        $leavePerMonth = $leaveWithPay / 12;
-        $leavePerDay = $leavePerMonth / 30;
-
-        for ($d = 1; $d <= 30; $d++) {
-            $value = number_format($leavePerDay * $d, 3, '.', '');
-            $this->days[] = [
-                'day' => $d,
-                'leave' => ltrim($value, '0'),
-            ];
-        }
-
-        for ($m = 1; $m <= 12; $m++) {
-            $value = number_format($leavePerMonth * $m, 2, '.', '');
-            $this->months[] = [
-                'month' => $m,
-                'leave' => ltrim($value, '0'),
-            ];
+            // dd('Monthly Base:', $this->monthly_base);
+        } else {
+            $this->monthly_base = [];
+            // dd('Monthly Base Empty', $this->monthly_base);
         }
     }
+
 
 
 
@@ -145,7 +127,7 @@ class LeaveCreditsConfig extends Component
     public function render()
     {
         $leaveTypes = LeaveType::all();
-        return view('livewire.leave-credits-config',[
+        return view('livewire.leave-credits-config', [
             'leaveTypes' => $leaveTypes
         ]);
     }

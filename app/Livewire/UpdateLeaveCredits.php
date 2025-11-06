@@ -9,6 +9,7 @@ use App\Models\LeaveRecordCard;
 use App\Models\LeaveCredit;
 use Carbon\Carbon;
 
+
 class UpdateLeaveCredits extends Component
 {
     public $id;
@@ -25,13 +26,14 @@ class UpdateLeaveCredits extends Component
     public $leaveDays;
     public $leaveHours;
     public $leaveMinutes;
-    public $remarks;
+    public $remarks = "";
     public $annualCredits;
+    public $leave;
     public $leaveRecords = [];
     public $years = [];
     public $months = [];
 
-
+    // INITIAL -------------------------------------
     public function mount($id)
     {
         $this->id = $id;
@@ -55,62 +57,51 @@ class UpdateLeaveCredits extends Component
             ];
         })->toArray();
         $this->period_month = now()->month;
+        $this->period_year = now()->year;
     }
 
 
-
+    // LOAD DATA-------------------------------------
     public function loadData()
-{
-    $record = LeaveRecordCard::where('employee_id', $this->id)->first();
+    {
+        $record = LeaveRecordCard::where('employee_id', $this->id)->first();
 
-    if (!$record || !$record->records) {
-        $this->leaveRecords = [];
-        return;
+        if (!$record || !$record->records) {
+            $this->leaveRecords = [];
+            return;
+        }
+
+        $selectedYear = $this->endYear ?: now()->year;
+
+        $records = collect($record->records)
+            ->sortBy([
+                ['period_year', 'asc'],
+                ['period_month', 'asc'],
+            ])
+            ->values();
+
+        if ($this->endYear !== "" && $this->endYear !== null) {
+            $records = $records->where('period_year', (int) $selectedYear)->values();
+        }
+
+        $this->leaveRecords = $records->map(function ($r) {
+
+            $month = Carbon::create($r['period_year'], $r['period_month'], 1);
+            $start = $month->startOfMonth()->format('j');
+            $end = $month->endOfMonth()->format('j');
+            $periodLabel = $month->format('F') . " {$start}-{$end} {$r['period_year']}";
+
+            return array_merge($r, [
+                'period' => $periodLabel
+            ]);
+        })->toArray();
     }
-
-    $selectedYear = $this->endYear ?: now()->year;
-
-    $records = collect($record->records)
-        ->sortBy([
-            ['period_year', 'asc'],
-            ['period_month', 'asc'],
-        ])
-        ->values();
-
-    // ✅ If filtering by year, do NOT reset balance
-    if ($this->endYear !== "" && $this->endYear !== null) {
-        $records = $records->where('period_year', (int) $selectedYear)->values();
-    }
-
-    // ✅ Just return the saved values from DB
-    $this->leaveRecords = $records->map(function ($r) {
-
-        $month = Carbon::create($r['period_year'], $r['period_month'], 1);
-        $start = $month->startOfMonth()->format('j');
-        $end = $month->endOfMonth()->format('j');
-        $periodLabel = $month->format('F') . " {$start}-{$end} {$r['period_year']}";
-
-        return array_merge($r, [
-            'period' => $periodLabel
-        ]);
-    })->toArray();
-}
-
     public function updatedEndYear()
     {
         $this->loadData();
     }
 
-
-
-
-
-
-
-
-
-
-
+    // GENERATE ANNUAL CREDIT------------------------
     public function generateAnnualCredits()
     {
         $record = LeaveRecordCard::where('employee_id', $this->id)->first();
@@ -123,7 +114,6 @@ class UpdateLeaveCredits extends Component
         $leaveCredit = LeaveCredit::first();
         $monthlyLeave = $leaveCredit->leave_with_pay / 12;
 
-        // ✅ Get previous final balance
         $records = $record ? $record->records : [];
         $prevVac = collect($records)->last()['balance_vacation'] ?? 0;
         $prevSick = collect($records)->last()['balance_sick'] ?? 0;
@@ -132,7 +122,6 @@ class UpdateLeaveCredits extends Component
 
         for ($month = 1; $month <= 12; $month++) {
 
-            // ✅ NEW balance = previous balance + earned
             $prevVac += $monthlyLeave;
             $prevSick += $monthlyLeave;
 
@@ -169,67 +158,127 @@ class UpdateLeaveCredits extends Component
 
 
 
-
+    // SAVE NEW RECORD-------------------------------- 
     public function saveRecord()
     {
         $record = LeaveRecordCard::where('employee_id', $this->id)->first();
-
         if (!$record || !$record->records) {
             $this->dispatch(event: 'error', message: 'No annual records exist. Generate annual credits first.');
             return;
         }
 
-        // Build new record entry
-        $newEntry = [
-            'period_month' => $this->period_month,
-            'period_day' => $this->period_day,
-            'period_year' => $this->period_year,
+        $leaveCredit = LeaveCredit::first();
+        $hour_day_base = $leaveCredit ? $leaveCredit->hour_day_base : 0;
+        $leave_with_pay = $leaveCredit ? $leaveCredit->leave_with_pay : 0;
+        $leave_without_pay = $leaveCredit ? $leaveCredit->leave_without_pay : 0;
 
-            'particulars' => $this->selected_leave,
-            'earned_vacation' => 0,
-            'absence_w_vacation' => $this->leaveDays,
-            'balance_vacation' => 0,
-            'absence_wo_vacation' => 0,
 
-            'earned_sick' => 0,
-            'absence_w_sick' => $this->leaveDays,
-            'balance_sick' => 0,
-            'absence_wo_sick' => 0,
-
-            'remarks' => $this->remarks,
-        ];
 
         $records = collect($record->records);
+        $previous = $records
+            ->filter(function ($r) {
+                if ((int) $r['period_year'] == (int) $this->period_year && (int) $r['period_month'] < (int) $this->period_month) {
+                    return true;
+                }
+                if (
+                    (int) $r['period_year'] == (int) $this->period_year &&
+                    (int) $r['period_month'] == (int) $this->period_month
+                ) {
+                    $rStartDay = intval(explode('-', $r['period_day'])[0]);
+                    $inputStartDay = intval(explode('-', $this->period_day)[0]);
+                    return $rStartDay < $inputStartDay;
+                }
+                return false;
+            })
+            ->sort(function ($a, $b) {
+                return ($a['period_year'] <=> $b['period_year'])
+                    ?: ($a['period_month'] <=> $b['period_month'])
+                    ?: (intval(explode('-', $a['period_day'])[0]) <=> intval(explode('-', $b['period_day'])[0]));
+            })
+            ->last();
+        $prevVac = $previous['balance_vacation'] ?? 0;
+        $prevSick = $previous['balance_sick'] ?? 0;
 
-        $records->push($newEntry);
 
-        $records = $records->sortBy([
-            ['period_year', 'asc'],
-            ['period_month', 'asc']
-        ])->values();
+        dd($prevVac, $prevSick);
 
-        $vacBalance = 0;
-        $sickBalance = 0;
 
-        $records = $records->map(function ($r) use (&$vacBalance, &$sickBalance) {
 
-            $vacBalance += ($r['earned_vacation'] ?? 0);
-            $sickBalance += ($r['earned_sick'] ?? 0);
+        $hour_day_base = $leaveCredit ? $leaveCredit->hour_day_base : 0;
+        $leave_with_pay = $leaveCredit ? $leaveCredit->leave_with_pay : 0;
 
-            $r['balance_vacation'] = $vacBalance;
-            $r['balance_sick'] = $sickBalance;
+        // if ($this->leave == "vacation_leave") {
+        //     $earned_vacation = 0;
+        //     $day = $this->leaveDays;
+        //     $hour = $this->leaveHours;
+        //     $minutes = $this->leaveMinutes;
 
-            return $r;
-        });
 
-        $record->records = $records;
+            
+        //     $newEntry = [
+        //         'period_month' => $this->period_month,
+        //         'period_day' => $this->period_day,
+        //         'period_year' => $this->period_year,
+        //         'particulars' => $this->selected_leave,
 
-        dd($record);
-        $record->save();
 
+        //         'absence_w_vacation' => $this->leaveDays,
+        //         'balance_vacation' => 0,
+        //         'absence_wo_vacation' => 0,
+
+        //         'absence_w_sick' => $this->leaveDays,
+        //         'balance_sick' => 0,
+        //         'absence_wo_sick' => 0,
+
+        //         'remarks' => $this->remarks,
+        //     ];
+        // } elseif ($this->leave == "sick_leave") {
+        //     $earned_sick = 0;
+        //     $day = $this->leaveDays;
+        //     $hour = $this->leaveHours;
+        //     $minutes = $this->leaveMinutes;
+
+        //     $newEntry = [
+        //         'period_month' => $this->period_month,
+        //         'period_day' => $this->period_day,
+        //         'period_year' => $this->period_year,
+        //         'particulars' => $this->selected_leave,
+
+
+        //         'absence_w_vacation' => $this->leaveDays,
+        //         'balance_vacation' => 0,
+        //         'absence_wo_vacation' => 0,
+
+        //         'absence_w_sick' => $this->leaveDays,
+        //         'balance_sick' => 0,
+        //         'absence_wo_sick' => 0,
+
+        //         'remarks' => $this->remarks,
+        //     ];
+        // }
+$newEntry = [
+                'period_month' => $this->period_month,
+                'period_day' => $this->period_day,
+                'period_year' => $this->period_year,
+                'particulars' => $this->selected_leave,
+
+
+                'absence_w_vacation' => $this->leaveDays,
+                'balance_vacation' => 0,
+                'absence_wo_vacation' => 0,
+
+                'absence_w_sick' => $this->leaveDays,
+                'balance_sick' => 0,
+                'absence_wo_sick' => 0,
+
+                'remarks' => $this->remarks,
+            ];
+
+        dd($newEntry);
         $this->loadData();
         $this->dispatch(event: 'success', message: 'Record inserted and balances updated');
     }
+
 
 
     public function render()

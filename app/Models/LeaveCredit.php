@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class LeaveCredit extends Model
 {
     protected $fillable = [
-        'hour_day_base',
-        'leave_with_pay',
-        'leave_without_pay',
+        'hourly_base',
+        'monthly_base',
     ];
 
+    protected $casts = [
+        'hourly_base' => 'array',
+        'monthly_base' => 'array',
+    ];
 }
+

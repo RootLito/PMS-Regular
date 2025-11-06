@@ -34,18 +34,18 @@
 
                     <p class="mt-2 text-sm font-semibold text-gray-700">Leave Type</p>
                     <select wire:model.live="leave" id="leave"
-                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
+                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2" required>
                         <option value="" disabled selected>Select Leave</option>
                         <option value="vacation_leave">Vacation Leave</option>
                         <option value="sick_leave">Sick Leave</option>
                     </select>
 
 
+
                     <p class="mt-2 text-sm font-semibold text-gray-700">Period</p>
                     <div class="w-full flex gap-2">
                         <div class="flex flex-col w-full">
-                            {{-- <label for="period_month" class="mt-2 text-sm">Month</label> --}}
-                            <select wire:model="period_month" id="period_month"
+                            <select wire:model.live="period_month" id="period_month"
                                 class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
 
                                 <option value="" disabled>Select Month</option>
@@ -61,8 +61,7 @@
 
                         </div>
                         <div class="flex flex-col w-full">
-                            {{-- <label for="period_day" class="mt-2 text-sm">Days</label> --}}
-                            <input type="text" id="period_day" wire:model="period_day"
+                            <input type="text" id="period_day" wire:model.live="period_day"
                                 class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
 
                             @error('period_day')
@@ -90,7 +89,7 @@
                                 class="mt-1 flex-1 h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
                                 <option value="">-- Code --</option>
                                 @foreach ($leaveTypes as $type)
-                                    <option value="{{ $type->abbreviation }}">{{ $type->leave_type }}</option>
+                                    <option value="{{ $type->abbreviation }}">{{ $type->abbreviation }}</option>
                                 @endforeach
                             </select>
 

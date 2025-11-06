@@ -9,8 +9,9 @@
             <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
                 <h2 class="text-gray-700 font-bold mb-4">Table 1</h2>
                 <p class="text-sm text-gray-700">Table showing conversion for <strong>leave with pay</strong> and
-                    <strong>leave with without pay</strong>.
+                    <strong>leave without pay</strong>.
                 </p>
+
                 <table class="min-w-full table-auto text-sm mt-4">
                     <thead class="bg-gray-100 text-left">
                         <tr class="border-b border-t border-gray-200">
@@ -18,15 +19,14 @@
                             <th class="px-4 py-2 text-nowrap">Leave Earned</th>
                             <th class="px-4 py-2 text-nowrap">Month</th>
                             <th class="px-4 py-2 text-nowrap">Leave Earned</th>
-                            {{-- <th class="px-4 py-2 text-nowrap">Vication Leave (WOP)</th> --}}
-                            {{-- <th class="px-4 py-2 text-nowrap">Leave Earned</th>a --}}
                         </tr>
                     </thead>
                     <tbody>
-                        @for ($i = 0; $i < 30; $i++)
+                        @forelse($days as $i => $day)
                             <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
-                                <td class="px-4">{{ $days[$i]['day'] }}</td>
-                                <td class="px-4">{{ $days[$i]['leave'] }}</td>
+                                <td class="px-4">{{ $day['day'] }}</td>
+                                <td class="px-4">{{ $day['leave'] }}</td>
+
                                 @if (isset($months[$i]))
                                     <td class="px-4">{{ $months[$i]['month'] }}</td>
                                     <td class="px-4">{{ $months[$i]['leave'] }}</td>
@@ -35,18 +35,26 @@
                                     <td class="px-4"></td>
                                 @endif
                             </tr>
-                        @endfor
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center text-gray-500 py-3">
+                                    No data available
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+
+
             <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
                 <h2 class="text-gray-700 font-bold mb-4">Table 2</h2>
                 <p class="text-sm text-gray-700">Table showing conversion of working hours/minutes into fractions of a
-                    day
-                </p>
+                    day</p>
                 <p class="text-xs italic text-gray-700 font-bold">Based on 8-hour day</p>
 
                 <div class="w-full flex gap-6">
+
                     <table class="self-start table-auto text-sm mt-4 w-[300px]">
                         <thead class="bg-gray-100 text-left">
                             <tr class="border-b border-t border-gray-200">
@@ -55,14 +63,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($hours as $hour)
+                            @forelse($hours as $hour)
                                 <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
                                     <td class="px-4 py-1">{{ $hour['hour'] }}</td>
                                     <td class="px-4 py-1">{{ $hour['equiv'] }}</td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="text-center text-gray-500 py-3">
+                                        No data available
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
+
 
                     <table class="flex-1 table-auto text-sm mt-4">
                         <thead class="bg-gray-100 text-left">
@@ -74,20 +89,35 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for ($i = 0; $i < count($minutesLeft); $i++)
+                            @forelse($minutesLeft as $i => $left)
                                 <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
-                                    <td class="px-4">{{ $minutesLeft[$i]['minute'] }}</td>
-                                    <td class="px-4">.{{ substr(explode('.', $minutesLeft[$i]['equiv'])[1], 0, 3) }}
+                                    <td class="px-4">{{ $left['minute'] }}</td>
+                                    <td class="px-4">.{{ substr(explode('.', $left['equiv'])[1] ?? '000', 0, 3) }}
                                     </td>
-                                    <td class="px-4">{{ $minutesRight[$i]['minute'] }}</td>
-                                    <td class="px-4">.{{ substr(explode('.', $minutesRight[$i]['equiv'])[1], 0, 3) }}
+
+                                    @if (isset($minutesRight[$i]))
+                                        <td class="px-4">{{ $minutesRight[$i]['minute'] }}</td>
+                                        <td class="px-4">
+                                            .{{ substr(explode('.', $minutesRight[$i]['equiv'])[1] ?? '000', 0, 3) }}
+                                        </td>
+                                    @else
+                                        <td class="px-4"></td>
+                                        <td class="px-4"></td>
+                                    @endif
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-gray-500 py-3">
+                                        No data available
                                     </td>
                                 </tr>
-                            @endfor
+                            @endforelse
                         </tbody>
                     </table>
+
                 </div>
             </div>
+
 
 
             <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
@@ -118,35 +148,16 @@
             </div>
         </div>
         <div class="w-[400px] flex flex-col gap-10">
-            <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="leavePay">
+            <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="monthBase">
                 <h2 class="text-gray-700 font-bold mb-4">Table 1</h2>
                 <div>
                     <label class="block text-sm text-gray-700">Annual credit (12-month equivalent)</label>
-                    <input type="text" wire:model="leave_with_pay"
+                    <input type="text" wire:model="month_base"
                         class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
-                    @error('leave_with_pay')
+                    @error('month_base')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
                 </div>
-                {{-- <div>
-                    <label class="block text-sm text-gray-700">Leave with Pay <span class="font-bold text-sm">Day/Month
-                            (1-30)</span></label>
-                    <input type="text" wire:model="leave_with_pay"
-                        class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
-                    @error('leave_with_pay')
-                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                    @enderror
-                </div> --}}
-                {{-- <div class="mt-2">
-                    <label class="block text-sm text-gray-700">Leave without Pay <span
-                            class="font-bold text-sm">Day/Month
-                            (1-30)</span></label>
-                    <input type="text" wire:model="leave_without_pay"
-                        class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
-                    @error('leave_without_pay')
-                        <span class="text-red-500 text-xs">{{ $message }}</span>
-                    @enderror
-                </div> --}}
                 <button type="submit"
                     class="w-full bg-slate-700 text-white py-2 rounded-md hover:bg-slate-500 cursor-pointer mt-2 mb-2">
                     Confirm
