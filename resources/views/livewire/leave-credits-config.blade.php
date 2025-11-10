@@ -12,39 +12,44 @@
                     <strong>leave without pay</strong>.
                 </p>
 
-                <table class="min-w-full table-auto text-sm mt-4">
+                <table class="w-full text-xs mt-4">
                     <thead class="bg-gray-100 text-left">
                         <tr class="border-b border-t border-gray-200">
-                            <th class="px-4 py-2 text-nowrap">Day</th>
-                            <th class="px-4 py-2 text-nowrap">Leave Earned</th>
                             <th class="px-4 py-2 text-nowrap">Month</th>
+                            <th class="px-4 py-2 text-nowrap">Leave Earned</th>
+                            <th class="px-4 py-2 text-nowrap">Day</th>
                             <th class="px-4 py-2 text-nowrap">Leave Earned</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($days as $i => $day)
-                            <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
-                                <td class="px-4">{{ $day['day'] }}</td>
-                                <td class="px-4">{{ $day['leave'] }}</td>
 
-                                @if (isset($months[$i]))
-                                    <td class="px-4">{{ $months[$i]['month'] }}</td>
-                                    <td class="px-4">{{ $months[$i]['leave'] }}</td>
+                    <tbody>
+                        @for ($i = 0; $i < 30; $i++)
+                            <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
+
+                                @if ($i < count($this->yearBase))
+                                    <td class="px-4">{{ $this->yearBase[$i]['year'] }}</td>
+                                    <td class="px-4">{{ $this->yearBase[$i]['leave'] ?? '' }}</td>
                                 @else
                                     <td class="px-4"></td>
                                     <td class="px-4"></td>
                                 @endif
+
+                                @if ($i < count($this->monthBase))
+                                    <td class="px-4">{{ $this->monthBase[$i]['month'] }}</td>
+                                    <td class="px-4">{{ $this->monthBase[$i]['leave'] ?? '' }}</td>
+                                @else
+                                    <td class="px-4"></td>
+                                    <td class="px-4"></td>
+                                @endif
+
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center text-gray-500 py-3">
-                                    No data available
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endfor
                     </tbody>
+
+
                 </table>
             </div>
+
 
 
             <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
@@ -55,7 +60,7 @@
 
                 <div class="w-full flex gap-6">
 
-                    <table class="self-start table-auto text-sm mt-4 w-[300px]">
+                    <table class="self-start table-auto text-xs mt-4 w-[300px]">
                         <thead class="bg-gray-100 text-left">
                             <tr class="border-b border-t border-gray-200">
                                 <th class="px-4 py-2 text-nowrap">Hours</th>
@@ -79,51 +84,43 @@
                     </table>
 
 
-                    <table class="flex-1 table-auto text-sm mt-4">
-                        <thead class="bg-gray-100 text-left">
-                            <tr class="border-b border-t border-gray-200">
-                                <th class="px-4 py-2 text-nowrap">Minutes</th>
-                                <th class="px-4 py-2 text-nowrap">Equiv. Day</th>
-                                <th class="px-4 py-2 text-nowrap">Minutes</th>
-                                <th class="px-4 py-2 text-nowrap">Equiv. Day</th>
+                    <table class="table-auto flex-1 text-xs mt-4">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Minutes</th>
+                                <th class="px-3 py-2 text-left">Equiv. Day</th>
+                                <th class="px-3 py-2 text-left">Minutes</th>
+                                <th class="px-3 py-2 text-left">Equiv. Day</th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            @forelse($minutesLeft as $i => $left)
-                                <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
-                                    <td class="px-4">{{ $left['minute'] }}</td>
-                                    <td class="px-4">.{{ substr(explode('.', $left['equiv'])[1] ?? '000', 0, 3) }}
+                            @for ($i = 0; $i < 30; $i++)
+                                <tr class="odd:bg-white even:bg-gray-50">
+                                    <td class="px-3">
+                                        {{ $minutesLeft[$i]['minute'] ?? '' }}
+                                    </td>
+                                    <td class="px-3">
+                                        {{ $minutesLeft[$i]['equiv'] ?? '' }}
                                     </td>
 
-                                    @if (isset($minutesRight[$i]))
-                                        <td class="px-4">{{ $minutesRight[$i]['minute'] }}</td>
-                                        <td class="px-4">
-                                            .{{ substr(explode('.', $minutesRight[$i]['equiv'])[1] ?? '000', 0, 3) }}
-                                        </td>
-                                    @else
-                                        <td class="px-4"></td>
-                                        <td class="px-4"></td>
-                                    @endif
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-gray-500 py-3">
-                                        No data available
+                                    <td class="px-3">
+                                        {{ $minutesRight[$i]['minute'] ?? '' }}
+                                    </td>
+                                    <td class="px-3">
+                                        {{ $minutesRight[$i]['equiv'] ?? '' }}
                                     </td>
                                 </tr>
-                            @endforelse
+                            @endfor
                         </tbody>
                     </table>
 
                 </div>
             </div>
-
-
-
-            <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
+            <div class="flex-1 bg-white rounded-xl p-6 shadow ">
                 <h2 class="text-gray-700 font-bold mb-4">Leave Types List</h2>
 
-                <table class="min-w-full table-auto text-sm mt-4">
+                <table class="min-w-full table-auto text-xs mt-4">
                     <thead class="bg-gray-100 text-left">
                         <tr class="border-b border-t border-gray-200">
                             <th class="px-4 py-2 text-nowrap" width="30%">Abbreviation</th>

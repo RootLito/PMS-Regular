@@ -39,7 +39,7 @@
                         <option value="vacation_leave">Vacation Leave</option>
                         <option value="sick_leave">Sick Leave</option>
                     </select>
-
+                    {{-- {{ $leave }} --}}
 
 
                     <p class="mt-2 text-sm font-semibold text-gray-700">Period</p>
@@ -63,6 +63,7 @@
                         <div class="flex flex-col w-full">
                             <input type="text" id="period_day" wire:model.live="period_day"
                                 class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+
 
                             @error('period_day')
                                 <span class="text-red-500 text-xs">{{ $message }}</span>
@@ -133,6 +134,15 @@
                     @endif
 
 
+                    <p class="mt-2 text-sm font-semibold text-gray-700">Absence Undertime</p>
+                    <select wire:model.live="absence_undertime" id="absence_undertime"
+                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2" required>
+                        <option value="" disabled selected>Select</option>
+                        <option value="wp">With Pay</option>
+                        <option value="wop">Without Pay</option>
+                    </select>
+
+
                     <div class="flex flex-col w-full">
                         <label for="remarks" class="mt-2 text-sm  font-semibold text-gray-700">Remarks</label>
                         <textarea wire:model="remarks" id="remarks"
@@ -192,14 +202,26 @@
                         <span></span>
                     </div>
                 </div>
-                <div class="flex flex-col">
+                <div class="flex gap-2">
                     <select wire:model.live="endYear" id="endYear"
-                        class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
+                        class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]  h-10">
                         <option value="">All Year</option>
                         @foreach ($years as $year)
                             <option value="{{ $year }}">{{ $year }}</option>
                         @endforeach
                     </select>
+                    <button type="submit"
+                        class="w-full bg-green-700 h-10 text-white py-2 text-sm rounded-md hover:bg-green-500 cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-export"></i>
+                        Export
+                    </button>
+
+                    <button type="submit"
+                        class="w-full bg-slate-700 h-10 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-print"></i>
+                        Print
+                    </button>
+
                 </div>
             </div>
 
@@ -232,61 +254,91 @@
                     <tbody>
                         @php
                             $lastYear = null;
+                            $yearEndBalance = [];
+
+                            // Get year-end balances (last occurrence per year)
+                            foreach ($leaveRecords as $r) {
+                                $y = $r['period_year'];
+                                $yearEndBalance[$y]['vac'] = $r['balance_vacation'] ?? '';
+                                $yearEndBalance[$y]['sick'] = $r['balance_sick'] ?? '';
+                            }
                         @endphp
 
                         @forelse ($leaveRecords as $rec)
                             @if ($lastYear !== $rec['period_year'])
-                                <tr class="bg-slate-700 text-center">
-                                    <td colspan="11" class="p-2 text-left text-white font-bold">
+                                @php
+                                    $vacFinal = $yearEndBalance[$rec['period_year']]['vac'] ?? '';
+                                    $sickFinal = $yearEndBalance[$rec['period_year']]['sick'] ?? '';
+                                @endphp
+
+                                <tr class="bg-slate-700 text-center font-bold text-white">
+                                    <td colspan="2" class="p-2 text-left">
                                         {{ $rec['period_year'] }}
                                     </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ $vacFinal !== '' ? number_format($vacFinal, 2) : '' }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ $sickFinal !== '' ? number_format($sickFinal, 2) : '' }}</td>
+                                    <td></td>
+                                    <td></td>
                                     <td class="p-2">
-                                        <button
-                                            class="text-red-500 text-xs bg-white p-1 rounded w-full">Delete</button>
+                                        <button class="text-red-500 text-xs bg-white p-1 rounded w-full cursor-pointer"
+                                            wire:click="deleteYear('{{ $rec['period_year'] }}')">
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
+
                                 @php
                                     $lastYear = $rec['period_year'];
                                 @endphp
                             @endif
 
+
                             <tr class="text-center">
                                 <td class="border border-gray-200 p-1 text-left whitespace-nowrap">
                                     {{ $rec['period'] }}</td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ $rec['particulars'] ?? '' }}</td>
+                                    <div class="w-full flex justify-between">
+                                        <span>{{ $rec['particulars'][0] ?? '' }}</span>
+                                        <span>{{ $rec['particulars'][1] ?? '' }}</span>
+                                    </div>
+                                </td>
 
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ isset($rec['earned_vacation']) ? number_format($rec['earned_vacation'], 2) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ $rec['absence_w_vacation'] ?? '' }}
+                                    {{ !empty($rec['absence_w_vacation']) ? $rec['absence_w_vacation'] : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ isset($rec['balance_vacation']) ? number_format($rec['balance_vacation'], 2) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ $rec['absence_wo_vacation'] ?? '' }}
+                                    {{ !empty($rec['absence_wo_vacation']) ? $rec['absence_wo_vacation'] : '' }}
                                 </td>
 
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ isset($rec['earned_sick']) ? number_format($rec['earned_sick'], 2) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ $rec['absence_w_sick'] ?? '' }}
+                                    {{ !empty($rec['absence_w_sick']) ? $rec['absence_w_sick'] : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ isset($rec['balance_sick']) ? number_format($rec['balance_sick'], 2) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ $rec['absence_wo_sick'] ?? '' }}
+                                    {{ !empty($rec['absence_wo_sick']) ? $rec['absence_wo_sick'] : '' }}
                                 </td>
 
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ $rec['date_transferred'] ?? '' }}</td>
+                                    {{ $rec['remarks'] ?? '' }}</td>
 
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    <button class="text-blue-500 text-xs mr-2">Edit</button>
+                                    {{-- <button class="text-blue-500 text-xs mr-2">Edit</button> --}}
                                     <button class="text-red-500 text-xs">Delete</button>
                                 </td>
                             </tr>
@@ -296,6 +348,7 @@
                             </tr>
                         @endforelse
                     </tbody>
+
                 </table>
             </div>
         </div>

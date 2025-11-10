@@ -10,8 +10,11 @@ return new class extends Migration
     {
         Schema::table('leave_credits', function (Blueprint $table) {
             $table->dropColumn(['hour_day_base', 'leave_with_pay', 'leave_without_pay']);
+
             $table->json('hourly_base')->nullable();
             $table->json('monthly_base')->nullable();
+            $table->json('minutes_base')->nullable();   
+            $table->json('yearly_base')->nullable();   
         });
     }
 
@@ -21,7 +24,7 @@ return new class extends Migration
             $table->integer('hour_day_base')->default(0);
             $table->integer('leave_with_pay')->default(0);
             $table->integer('leave_without_pay')->default(0);
-            $table->dropColumn(['hourly_base', 'monthly_base']);
+            $table->dropColumn(['hourly_base', 'monthly_base', 'daily_base', 'yearly_base']);
         });
     }
 };
