@@ -135,9 +135,9 @@
 
 
                     <p class="mt-2 text-sm font-semibold text-gray-700">Absence Undertime</p>
-                    <select wire:model.live="absence_undertime" id="absence_undertime"
+                    <select wire:model="absence_undertime" id="absence_undertime"
                         class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2" required>
-                        <option value="" disabled selected>Select</option>
+                        <option value="" disabled>Select</option>
                         <option value="wp">With Pay</option>
                         <option value="wop">Without Pay</option>
                     </select>
@@ -155,6 +155,44 @@
                     <button type="submit"
                         class="w-full bg-slate-700 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer mt-2">
                         Create Record
+                    </button>
+                </form>
+            </div>
+
+
+
+            {{-- ADDED CREDITS --}}
+            <div class="flex flex-col bg-white rounded-xl p-6 shadow ">
+                <form wire:submit.prevent="addedCredits">
+                    @csrf
+                    <h2 class="font-bold text-gray-600">Added Credits</h2>
+                    <div class="flex flex-col w-full">
+                        <label for="added_period" class="mt-2 text-sm text-gray-700">Description</label>
+                        <input type="text" id="added_period" wire:model="added_period"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                        @error('added_period')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="flex flex-col w-full">
+                        <label for="added_vac" class="mt-2 text-sm text-gray-700">Vacation leave blance</label>
+                        <input type="text" id="added_vac" wire:model="added_vac"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                        @error('added_vac')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="flex flex-col w-full">
+                        <label for="added_sick" class="mt-2 text-sm text-gray-700">Sick leave balance</label>
+                        <input type="text" id="added_sick" wire:model="added_sick"
+                            class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
+                        @error('added_sick')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-slate-700 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer mt-2">
+                        Add Credit
                     </button>
                 </form>
             </div>
@@ -256,7 +294,6 @@
                             $lastYear = null;
                             $yearEndBalance = [];
 
-                            // Get year-end balances (last occurrence per year)
                             foreach ($leaveRecords as $r) {
                                 $y = $r['period_year'];
                                 $yearEndBalance[$y]['vac'] = $r['balance_vacation'] ?? '';
@@ -277,11 +314,11 @@
                                     </td>
                                     <td></td>
                                     <td></td>
-                                    <td>{{ $vacFinal !== '' ? number_format($vacFinal, 2) : '' }}</td>
+                                    <td>{{ $vacFinal !== '' ? number_format($vacFinal, 3) : '' }}</td>
                                     <td></td>
                                     <td></td>
                                     <td></td>
-                                    <td>{{ $sickFinal !== '' ? number_format($sickFinal, 2) : '' }}</td>
+                                    <td>{{ $sickFinal !== '' ? number_format($sickFinal, 3) : '' }}</td>
                                     <td></td>
                                     <td></td>
                                     <td class="p-2">
@@ -315,7 +352,7 @@
                                     {{ !empty($rec['absence_w_vacation']) ? $rec['absence_w_vacation'] : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ isset($rec['balance_vacation']) ? number_format($rec['balance_vacation'], 2) : '' }}
+                                    {{ isset($rec['balance_vacation']) ? number_format($rec['balance_vacation'], 3) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ !empty($rec['absence_wo_vacation']) ? $rec['absence_wo_vacation'] : '' }}
@@ -328,7 +365,7 @@
                                     {{ !empty($rec['absence_w_sick']) ? $rec['absence_w_sick'] : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ isset($rec['balance_sick']) ? number_format($rec['balance_sick'], 2) : '' }}
+                                    {{ isset($rec['balance_sick']) ? number_format($rec['balance_sick'], 3) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ !empty($rec['absence_wo_sick']) ? $rec['absence_wo_sick'] : '' }}
@@ -337,10 +374,19 @@
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ $rec['remarks'] ?? '' }}</td>
 
-                                <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{-- <button class="text-blue-500 text-xs mr-2">Edit</button> --}}
-                                    <button class="text-red-500 text-xs">Delete</button>
-                                </td>
+                                @if (!$rec['generated'])
+                                    <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                        <button wire:click="deleteRecord({{ $loop->index }})"
+                                            class="text-red-500 text-xs cursor-pointer">
+                                            Delete
+                                        </button>
+                                    </td>
+                                @else
+                                    <td class="border border-gray-200 p-1 whitespace-nowrap text-gray-400 text-xs">
+                                        Generated
+                                    </td>
+                                @endif
+
                             </tr>
                         @empty
                             <tr>

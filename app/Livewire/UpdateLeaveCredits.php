@@ -30,6 +30,9 @@ class UpdateLeaveCredits extends Component
     public $annualCredits;
     public $leave = "";
     public $absence_undertime = "";
+    public $added_period;
+    public $added_vac;
+    public $added_sick;
     public $leaveRecords = [];
     public $years = [];
     public $months = [];
@@ -48,9 +51,6 @@ class UpdateLeaveCredits extends Component
         $this->office = $emp->office;
         $this->appointed_date = $emp->appointed_date;
         $this->loadData();
-
-
-
         $this->months = collect(range(1, 12))->map(function ($m) {
             return [
                 'num' => $m,
@@ -60,8 +60,6 @@ class UpdateLeaveCredits extends Component
         $this->period_month = now()->month;
         $this->period_year = now()->year;
     }
-
-
     // LOAD DATA-------------------------------------
     public function loadData()
     {
@@ -93,7 +91,7 @@ class UpdateLeaveCredits extends Component
             $periodLabel = $month->format('F') . " {$r['period_day']} {$r['period_year']}";
 
             return array_merge($r, [
-                'period' => $periodLabel
+                'period' => $periodLabel,
             ]);
         })->toArray();
     }
@@ -101,7 +99,6 @@ class UpdateLeaveCredits extends Component
     {
         $this->loadData();
     }
-
     // GENERATE ANNUAL CREDIT------------------------
     // public function generateAnnualCredits()
     // {
@@ -284,7 +281,6 @@ class UpdateLeaveCredits extends Component
     //     $this->dispatch(event: 'success', message: 'Record inserted and balances updated');
     // }
 
-
     public function generateAnnualCredits()
     {
         $record = LeaveRecordCard::where('employee_id', $this->id)->first();
@@ -322,12 +318,11 @@ class UpdateLeaveCredits extends Component
                 'period_month' => $month,
                 'period_day' => "$firstDay-$lastDay",
                 'period_year' => $this->annualCredits,
-
                 'earned_vacation' => round($monthlyLeave, 3),
                 'balance_vacation' => round($prevVac, 3),
-
                 'earned_sick' => round($monthlyLeave, 3),
                 'balance_sick' => round($prevSick, 3),
+                'generated' => true,
             ];
         }
 
@@ -344,11 +339,7 @@ class UpdateLeaveCredits extends Component
         $this->loadData();
         $this->dispatch(event: 'success', message: 'Annual credits generated successfully');
     }
-
-
-
-
-
+    // SAVE NEW RECORD--------------------------------
     public function saveRecord()
     {
         $record = LeaveRecordCard::where('employee_id', $this->id)->first();
@@ -356,10 +347,8 @@ class UpdateLeaveCredits extends Component
             $this->dispatch(event: 'error', message: 'No annual records exist. Generate annual credits first.');
             return;
         }
-
         $leaveCredit = LeaveCredit::first();
         $records = collect($record->records);
-
         $previous = $records
             ->filter(function ($r) {
                 if ((int) $r['period_year'] == (int) $this->period_year && (int) $r['period_month'] < (int) $this->period_month) {
@@ -381,20 +370,19 @@ class UpdateLeaveCredits extends Component
                     ?: (intval(explode('-', $a['period_day'])[0]) <=> intval(explode('-', $b['period_day'])[0]));
             })
             ->last();
-
         $prevVac = $previous['balance_vacation'] ?? 0;
         $prevSick = $previous['balance_sick'] ?? 0;
-
-        $days_credit = $leaveCredit->monthly_base ?? [];
+        $days_credit = $leaveCredit->hourly_base ?? [];
         $minutes_credit = $leaveCredit->minutes_base ?? [];
         $hours_credit = $leaveCredit->hourly_base ?? [];
+
+        $totalDeducted = 0;
 
         if ($this->leave == "vacation_leave") {
             $day = ltrim($this->leaveDays, '0');
             $hour = ltrim($this->leaveHours, '0');
             $minutes = ltrim($this->leaveMinutes, '0');
-
-            $day_equiv = isset($days_credit[$day]) ? $days_credit[$day] : 0;
+            $day_equiv = floatval($this->leaveDays);
             $hour_equiv = isset($hours_credit[$hour]) ? $hours_credit[$hour] : 0;
             $minute_equiv = isset($minutes_credit[$minutes]) ? $minutes_credit[$minutes] : 0;
             $totalLeave = $day_equiv + $hour_equiv + $minute_equiv;
@@ -403,6 +391,7 @@ class UpdateLeaveCredits extends Component
             $wop = $this->absence_undertime == "wop" ? $totalLeave : 0;
 
             $newEntry = [
+                'generated' => false,
                 'period_month' => $this->period_month,
                 'period_day' => $this->period_day,
                 'period_year' => (string) $this->period_year,
@@ -410,26 +399,25 @@ class UpdateLeaveCredits extends Component
                     $this->selected_leave,
                     "{$this->leaveDays}-{$this->leaveHours}-{$this->leaveMinutes}"
                 ],
-                'balance_vacation' => $prevVac,
+                'balance_vacation' => $prevVac - $totalLeave,
                 'absence_w_vacation' => $wp,
                 'absence_wo_vacation' => $wop,
                 'balance_sick' => $prevSick,
                 'remarks' => $this->remarks,
             ];
+            // dd($newEntry);
         } elseif ($this->leave == "sick_leave") {
             $day = ltrim($this->leaveDays, '0');
             $hour = ltrim($this->leaveHours, '0');
             $minutes = ltrim($this->leaveMinutes, '0');
-
-            $day_equiv = isset($days_credit[$day]) ? $days_credit[$day] : 0;
+            $day_equiv = floatval($this->leaveDays);
             $hour_equiv = isset($hours_credit[$hour]) ? $hours_credit[$hour] : 0;
             $minute_equiv = isset($minutes_credit[$minutes]) ? $minutes_credit[$minutes] : 0;
             $totalLeave = $day_equiv + $hour_equiv + $minute_equiv;
-
             $wp = $this->absence_undertime == "wp" ? $totalLeave : 0;
             $wop = $this->absence_undertime == "wop" ? $totalLeave : 0;
-
             $newEntry = [
+                'generated' => false,
                 'period_month' => $this->period_month,
                 'period_day' => $this->period_day,
                 'period_year' => (string) $this->period_year,
@@ -437,40 +425,51 @@ class UpdateLeaveCredits extends Component
                     $this->selected_leave,
                     "{$this->leaveDays}-{$this->leaveHours}-{$this->leaveMinutes}"
                 ],
-                'balance_sick' => $prevSick,
+                'balance_sick' => $prevSick - $totalLeave,
                 'absence_w_sick' => $wp,
                 'absence_wo_sick' => $wop,
                 'balance_vacation' => $prevVac,
                 'remarks' => $this->remarks,
             ];
+            // dd($newEntry);
         } else {
             $this->dispatch(event: 'error', message: 'Unknown leave type.');
             return;
         }
         $records->push($newEntry);
+
+
+        // dd($newEntry);
+
+
+
+
         $sortedCollection = collect($records)->sort(function ($a, $b) {
             return ($a['period_year'] <=> $b['period_year'])
                 ?: ($a['period_month'] <=> $b['period_month'])
                 ?: (intval(explode('-', $a['period_day'])[0]) <=> intval(explode('-', $b['period_day'])[0]));
         })->values();
         $sorted = $sortedCollection->toArray();
-        $vac = 0;
-        $sick = 0;
+        $first = $sorted[0];
 
-        for ($i = 0; $i < count($sorted); $i++) {
+        $vac = floatval($first['balance_vacation'] ?? 0);
+        $sick = floatval($first['balance_sick'] ?? 0);
+
+        $sorted[0]['balance_vacation'] = $vac;
+        $sorted[0]['balance_sick'] = $sick;
+        for ($i = 1; $i < count($sorted); $i++) {
             $rec = $sorted[$i];
+            $earnedVac = floatval($rec['earned_vacation'] ?? 0);
+            $earnedSick = floatval($rec['earned_sick'] ?? 0);
+            $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
+            $wpSick = floatval($rec['absence_w_sick'] ?? 0);
 
-            if ($i === 0) {
-                $vac = $rec['balance_vacation'] ?? 0;
-                $sick = $rec['balance_sick'] ?? 0;
-                $sorted[$i]['balance_vacation'] = $vac;
-                $sorted[$i]['balance_sick'] = $sick;
-                continue;
-            }
-            $wpVac = $rec['absence_w_vacation'] ?? 0;
-            $wpSick = $rec['absence_w_sick'] ?? 0;
-            $vac -= $wpVac;
-            $sick -= $wpSick;
+            // fixed --------------------------------
+            $woSick = floatval($rec['absence_wo_sick'] ?? 0);
+            $woVac = floatval($rec['absence_wo_vacation'] ?? 0);
+            $vac = round($vac + $earnedVac - ($wpVac + $woVac), 3);
+            $sick = round($sick + $earnedSick - ($wpSick + $woSick), 3);
+
             $sorted[$i]['balance_vacation'] = $vac;
             $sorted[$i]['balance_sick'] = $sick;
         }
@@ -479,6 +478,133 @@ class UpdateLeaveCredits extends Component
         $this->loadData();
         $this->dispatch(event: 'success', message: 'Record inserted and balances updated');
     }
+    // DELETE RECORD--------------------------------
+    public function deleteRecord($index)
+    {
+        $record = LeaveRecordCard::where('employee_id', $this->id)->first();
+
+        if (!$record || !$record->records) {
+            $this->dispatch(event: 'error', message: 'No records to delete.');
+            return;
+        }
+
+        $records = collect($record->records);
+
+        // ✅ Remove record
+        if (!isset($records[$index])) {
+            $this->dispatch(event: 'error', message: 'Record not found.');
+            return;
+        }
+
+        $records->forget($index);
+
+        // ✅ If empty after delete
+        if ($records->count() === 0) {
+            LeaveRecordCard::where('employee_id', $this->id)->update(['records' => []]);
+            $this->loadData();
+            $this->dispatch(event: 'success', message: 'Record deleted.');
+            return;
+        }
+
+        // ✅ SORT AGAIN by year, month, starting day
+        $sortedCollection = $records
+            ->sort(function ($a, $b) {
+                return ($a['period_year'] <=> $b['period_year'])
+                    ?: ($a['period_month'] <=> $b['period_month'])
+                    ?: (intval(explode('-', $a['period_day'])[0]) <=> intval(explode('-', $b['period_day'])[0]));
+            })
+            ->values();
+
+        $sorted = $sortedCollection->toArray();
+
+        // ✅ RECALCULATE balances from the beginning
+        $vac = floatval($sorted[0]['balance_vacation'] ?? 0);
+        $sick = floatval($sorted[0]['balance_sick'] ?? 0);
+
+        $sorted[0]['balance_vacation'] = $vac;
+        $sorted[0]['balance_sick'] = $sick;
+
+        for ($i = 1; $i < count($sorted); $i++) {
+
+            $rec = $sorted[$i];
+
+            $earnedVac = floatval($rec['earned_vacation'] ?? 0);
+            $earnedSick = floatval($rec['earned_sick'] ?? 0);
+
+            $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
+            $wpSick = floatval($rec['absence_w_sick'] ?? 0);
+
+            $vac = round($vac + $earnedVac - $wpVac, 3);
+            $sick = round($sick + $earnedSick - $wpSick, 3);
+
+            $sorted[$i]['balance_vacation'] = $vac;
+            $sorted[$i]['balance_sick'] = $sick;
+        }
+
+        LeaveRecordCard::where('employee_id', $this->id)
+            ->update(['records' => $sorted]);
+
+        $this->loadData();
+        $this->dispatch(event: 'success', message: 'Record deleted and balances recalculated.');
+    }
+
+    public function addedCredits()
+    {
+        $this->validate([
+            'added_period' => 'required|string|max:255',
+            'added_vac' => 'required|numeric',
+            'added_sick' => 'required|numeric',
+        ]);
+
+        $record = LeaveRecordCard::where('employee_id', $this->id)->first();
+
+        if (!$record || !$record->records) {
+            $this->dispatch(event: 'error', message: 'No annual records exist. Generate annual credits first.');
+            return;
+        }
+
+        $records = collect($record->records);
+
+        $newStart = [
+            'period' => [$this->added_period],
+            'balance_vacation' => floatval($this->added_vac),
+            'balance_sick' => floatval($this->added_sick),
+        ];
+
+        // dd($newStart);  
+
+
+        $records->prepend($newStart);
+
+        $sorted = $records->values()->toArray();
+
+        $vac = floatval($sorted[0]['balance_vacation'] ?? 0);
+        $sick = floatval($sorted[0]['balance_sick'] ?? 0);
+
+        for ($i = 1; $i < count($sorted); $i++) {
+            $rec = $sorted[$i];
+
+            $vac -= $rec['absence_w_vacation'] ?? 0;
+            $sick -= $rec['absence_w_sick'] ?? 0;
+
+            $sorted[$i]['balance_vacation'] = $vac;
+            $sorted[$i]['balance_sick'] = $sick;
+        }
+
+        LeaveRecordCard::where('employee_id', $this->id)
+            ->update(['records' => $sorted]);
+
+        $this->added_period = null;
+        $this->added_vac = null;
+        $this->added_sick = null;
+
+        $this->loadData();
+        $this->dispatch(event: 'success', message: 'Added credits successfully and recalculated balances.');
+    }
+
+
+
+
     public function deleteYear($year)
     {
         $record = LeaveRecordCard::where('employee_id', $this->id)->first();
