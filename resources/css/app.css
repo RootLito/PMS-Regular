@@ -11,7 +11,7 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-.print {
+/* .print {
     width: 794px;
     height: 1123px;
     background-color: white;
@@ -20,32 +20,8 @@
     font-family: 'Cambria', serif;
     font-size: 12pt;
     box-sizing: border-box;
-}
+} */
 
-.print img {
-    position: absolute;
-}
-
-.print img:nth-child(1) {
-    left: 0;
-    top: 0;
-}
-
-.print img:nth-child(2) {
-    left: 0;
-    bottom: 0;
-}
-
-.title {
-    font-size: 14pt;
-}
-
-.cn {
-    position: absolute;
-    left: 96px;
-    bottom: 132px;
-    font-style: italic;
-}
 
 @media print {
     body * {

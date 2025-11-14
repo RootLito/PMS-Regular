@@ -1,4 +1,4 @@
-<div class="flex-1 flex flex-col gap-10">
+<div class="w-full flex-1 flex flex-col gap-10 p-10">
     <div class="w-full flex justify-between">
         <h2 class="text-5xl font-bold text-gray-700">
             LEAVE RECORD
@@ -203,13 +203,24 @@
                 <form wire:submit.prevent="generateAnnualCredits">
                     @csrf
                     <h2 class="font-bold text-gray-600">Generate Annual Credits</h2>
-                    <select wire:model.live="annualCredits" id="annualCredits"
+
+                    {{-- <div class="w-full text-xs border border-blue-200 p-2 mt-2 rounded-md bg-blue-100 text-slate-600">
+                        <strong>Reminder:</strong> It is recommended to generate annual credits in an orderly manner to
+                        avoid miscalculations.
+                    </div> --}}
+
+                    <div class="w-full text-xs border border-blue-200 p-2 mt-2 rounded-md bg-blue-100 text-slate-600">
+                        <strong>Note:</strong> This will generate credits from the start of the appointed date until the
+                        current year.
+                    </div>
+
+                    {{-- <select wire:model.live="annualCredits" id="annualCredits"
                         class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
                         <option value="" disabled>Select Year</option>
                         @foreach ($years as $year)
                             <option value="{{ $year }}">{{ $year }}</option>
                         @endforeach
-                    </select>
+                    </select> --}}
                     <button type="submit"
                         class="w-full bg-slate-700 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer mt-2">
                         Generate
@@ -254,16 +265,17 @@
                         Export
                     </button>
 
-                    <button type="submit"
+                    <button type="button" onclick="window.print()"
                         class="w-full bg-slate-700 h-10 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer flex items-center justify-center gap-2">
                         <i class="fa-solid fa-print"></i>
                         Print
                     </button>
 
+
                 </div>
             </div>
 
-            <div class="overflow-auto mt-6">
+            <div class="overflow-auto mt-6 print">
                 <table class="min-w-full table-fixed border border-gray-200 text-xs mb-2">
                     <thead>
                         <tr class="bg-gray-100 text-center">
@@ -300,6 +312,37 @@
                                 $yearEndBalance[$y]['sick'] = $r['balance_sick'] ?? '';
                             }
                         @endphp
+
+                        @php
+                            $transfer = $transferredCredits->first();
+                        @endphp
+
+                        @if ($transfer)
+                            <tr class="text-center">
+                                <td class="border border-gray-200 p-1 whitespace-nowrap text-left">
+                                    {{ $transfer->description }}
+                                </td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ number_format($transfer->vacation_credits, 3) }}</td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    {{ number_format($transfer->sick_credits, 3) }}</td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap"></td>
+                                <td class="border border-gray-200 p-1 whitespace-nowrap">
+                                    <button wire:click="deleteTransferred('{{ $transfer['employee_id'] }}')"
+                                        class="text-red-500 text-xs cursor-pointer">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        @endif
+
 
                         @forelse ($leaveRecords as $rec)
                             @if ($lastYear !== $rec['period_year'])
