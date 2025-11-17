@@ -415,7 +415,7 @@ class UpdateLeaveCredits extends Component
                 'generated' => false,
                 'period_month' => $this->period_month,
                 'period_day' => $this->period_day,
-                'period_year' => (string) $this->period_year,
+                'period_year' => $this->period_year,
                 'particulars' => [
                     $this->selected_leave,
                     "{$this->leaveDays}-{$this->leaveHours}-{$this->leaveMinutes}"
@@ -431,7 +431,7 @@ class UpdateLeaveCredits extends Component
                 'generated' => false,
                 'period_month' => $this->period_month,
                 'period_day' => $this->period_day,
-                'period_year' => (string) $this->period_year,
+                'period_year' => $this->period_year,
                 'particulars' => [
                     $this->selected_leave,
                     "{$this->leaveDays}-{$this->leaveHours}-{$this->leaveMinutes}"
@@ -465,7 +465,89 @@ class UpdateLeaveCredits extends Component
         $sorted[0]['balance_sick'] = $sick;
 
 
-        // MODIFY 
+        // WORKING/ TO ME MODIFIED 
+        // for ($i = 1; $i < count($sorted); $i++) {
+        //     $rec = $sorted[$i];
+        //     $earnedVac = floatval($rec['earned_vacation'] ?? 0);
+        //     $earnedSick = floatval($rec['earned_sick'] ?? 0);
+        //     $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
+        //     $wpSick = floatval($rec['absence_w_sick'] ?? 0);
+        //     $woSick = floatval($rec['absence_wo_sick'] ?? 0);
+        //     $woVac = floatval($rec['absence_wo_vacation'] ?? 0);
+        //     $leaveType = strtoupper(trim($rec['particulars'][0] ?? ''));
+        //     if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU'])) {
+        //         $vac = round($vac + $earnedVac - $wpVac, 3);
+        //     } else {
+        //         $vac = round($vac + $earnedVac, 3);
+        //     }
+        //     if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU'])) {
+        //         $sick = round($sick + $earnedSick - $wpSick, 3);
+        //     } else {
+        //         $sick = round($sick + $earnedSick, 3);
+        //     }
+        //     $sorted[$i]['balance_vacation'] = $vac;
+        //     $sorted[$i]['balance_sick'] = $sick;
+        // }
+
+
+        for ($i = 1; $i < count($sorted); $i++) {
+            $rec = $sorted[$i];
+
+            $earnedVac = floatval($rec['earned_vacation'] ?? 0);
+            $earnedSick = floatval($rec['earned_sick'] ?? 0);
+
+            $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
+            $wpSick = floatval($rec['absence_w_sick'] ?? 0);
+
+            $woVac = floatval($rec['absence_wo_vacation'] ?? 0);
+            $woSick = floatval($rec['absence_wo_sick'] ?? 0);
+
+            // ----------------------------------------
+            // VACATION LOGIC WITH W/O OFFSET
+            // ----------------------------------------
+            if ($woVac > 0) {
+                // Reduce W/O first
+                $deduction = min($earnedVac, $woVac);
+                $woVac -= $deduction;
+                $earnedVac -= $deduction;
+            }
+
+            if ($woVac == 0) {
+                // Only add to balance AFTER w/o is fully cleared
+                $vac = round($vac + $earnedVac - $wpVac, 3);
+            } else {
+                // Still have W/O → DO NOT ADD EARNED TO BALANCE
+                $vac = round($vac - $wpVac, 3);
+            }
+
+
+            // ----------------------------------------
+            // SICK LOGIC WITH W/O OFFSET
+            // ----------------------------------------
+            if ($woSick > 0) {
+                $deduction = min($earnedSick, $woSick);
+                $woSick -= $deduction;
+                $earnedSick -= $deduction;
+            }
+
+            if ($woSick == 0) {
+                $sick = round($sick + $earnedSick - $wpSick, 3);
+            } else {
+                $sick = round($sick - $wpSick, 3);
+            }
+
+            // UPDATE VALUES
+            $sorted[$i]['balance_vacation'] = $vac;
+            $sorted[$i]['balance_sick'] = $sick;
+
+            // VERY IMPORTANT → update remaining W/O balances
+            $sorted[$i]['absence_wo_vacation'] = $woVac;
+            $sorted[$i]['absence_wo_sick'] = $woSick;
+        }
+
+
+
+        // TEST 1 -------------------------------- 
         // for ($i = 1; $i < count($sorted); $i++) {
         //     $rec = $sorted[$i];
         //     $earnedVac = floatval($rec['earned_vacation'] ?? 0);
@@ -485,30 +567,32 @@ class UpdateLeaveCredits extends Component
         //     $sorted[$i]['balance_vacation'] = $vac;
         //     $sorted[$i]['balance_sick'] = $sick;
         // }
-
-
-        for ($i = 1; $i < count($sorted); $i++) {
-            $rec = $sorted[$i];
-            $earnedVac = floatval($rec['earned_vacation'] ?? 0);
-            $earnedSick = floatval($rec['earned_sick'] ?? 0);
-            $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
-            $wpSick = floatval($rec['absence_w_sick'] ?? 0);
-            $woSick = floatval($rec['absence_wo_sick'] ?? 0);
-            $woVac = floatval($rec['absence_wo_vacation'] ?? 0);
-            if ($woVac == 0) {
-                $vac = round($vac + $earnedVac - $wpVac, 3);
-            }
-            if ($woSick == 0) {
-                $sick = round($sick + $earnedSick - $wpSick, 3);
-            }
-            $sorted[$i]['balance_vacation'] = $vac;
-            $sorted[$i]['balance_sick'] = $sick;
-        }
+        // TEST 2-----------------------------------
+        // for ($i = 1; $i < count($sorted); $i++) {
+        //     $rec = $sorted[$i];
+        //     $earnedVac = floatval($rec['earned_vacation'] ?? 0);
+        //     $earnedSick = floatval($rec['earned_sick'] ?? 0);
+        //     $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
+        //     $wpSick = floatval($rec['absence_w_sick'] ?? 0);
+        //     $woSick = floatval($rec['absence_wo_sick'] ?? 0);
+        //     $woVac = floatval($rec['absence_wo_vacation'] ?? 0);
+        //     if ($woVac == 0) {
+        //         $vac = round($vac + $earnedVac - $wpVac, 3);
+        //     }
+        //     if ($woSick == 0) {
+        //         $sick = round($sick + $earnedSick - $wpSick, 3);
+        //     }
+        //     $sorted[$i]['balance_vacation'] = $vac;
+        //     $sorted[$i]['balance_sick'] = $sick;
+        // }
         LeaveRecordCard::where('employee_id', $this->id)
             ->update(['records' => $sorted]);
         $this->loadData();
         $this->dispatch(event: 'success', message: 'Record inserted and balances updated');
     }
+
+
+
 
 
 
@@ -681,7 +765,8 @@ class UpdateLeaveCredits extends Component
         }
 
         $remaining = collect($record->records)
-            ->filter(fn($r) => (string) $r['period_year'] !== (string) $year)
+            // ->filter(fn($r) => (string) $r['period_year'] !== (string) $year)
+            ->filter(fn($r) => $r['period_year'] !== $year)
             ->values();
 
         $vacationBalance = 0;
