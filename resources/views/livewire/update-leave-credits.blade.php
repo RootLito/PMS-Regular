@@ -134,13 +134,13 @@
                     @endif
 
 
-                    <p class="mt-2 text-sm font-semibold text-gray-700">Absence Undertime</p>
+                    {{-- <p class="mt-2 text-sm font-semibold text-gray-700">Absence Undertime</p>
                     <select wire:model="absence_undertime" id="absence_undertime"
                         class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2" required>
                         <option value="" disabled>Select</option>
                         <option value="wp">With Pay</option>
                         <option value="wop">Without Pay</option>
-                    </select>
+                    </select> --}}
 
 
                     <div class="flex flex-col w-full">
