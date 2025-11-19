@@ -8,8 +8,7 @@
         <div class="flex-1 flex flex-col gap-10">
             <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
                 <h2 class="text-gray-700 font-bold mb-4">Table 1</h2>
-                <p class="text-sm text-gray-700">Table showing conversion for <strong>leave with pay</strong> and
-                    <strong>leave without pay</strong>.
+                <p class="text-sm text-gray-700">Table showing conversion for <strong>leave with pay</strong>.
                 </p>
 
                 <table class="w-full text-xs mt-4">
@@ -45,8 +44,6 @@
                             </tr>
                         @endfor
                     </tbody>
-
-
                 </table>
             </div>
 
@@ -117,10 +114,47 @@
 
                 </div>
             </div>
+
+            <div class="flex-1 h-[900px] bg-white rounded-xl p-6 shadow">
+                <h2 class="text-gray-700 font-bold mb-4">Table 3</h2>
+                <p class="text-sm text-gray-700">Table showing conversion for <strong>leave without pay</strong>.
+                </p>
+
+                <table class="w-full text-xs border-collapse border border-gray-200 mt-4">
+                    <thead class="bg-gray-100 text-left">
+                        <tr class="border-b border-gray-200">
+                            <th class="px-4 py-2">Day</th>
+                            <th class="px-4 py-2">Value</th>
+                            <th class="px-4 py-2">Day</th>
+                            <th class="px-4 py-2">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $halfDays = $halfDayBaseArray;
+                            $count = count($halfDays);
+                            $halfCount = ceil($count / 2);
+                        @endphp
+                        @for ($i = 0; $i < $halfCount; $i++)
+                            @php
+                                $leftData = $halfDays[$i] ?? null;
+                                $rightIndex = $i + $halfCount;
+                                $rightData = $halfDays[$rightIndex] ?? null;
+                            @endphp
+                            <tr class="text-xs hover:bg-gray-100 odd:bg-white even:bg-gray-50">
+                                <td class="px-4">{{ $leftData['day'] ?? '' }}</td>
+                                <td class="px-4">{{ $leftData['value'] ?? '' }}</td>
+                                <td class="px-4">{{ $rightData['day'] ?? '' }}</td>
+                                <td class="px-4">{{ $rightData['value'] ?? '' }}</td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
             <div class="flex-1 bg-white rounded-xl p-6 shadow ">
                 <h2 class="text-gray-700 font-bold mb-4">Leave Types List</h2>
 
-                <table class="min-w-full table-auto text-xs mt-4">
+                {{-- <table class="min-w-full table-auto text-xs mt-4">
                     <thead class="bg-gray-100 text-left">
                         <tr class="border-b border-t border-gray-200">
                             <th class="px-4 py-2 text-nowrap" width="30%">Abbreviation</th>
@@ -136,6 +170,73 @@
                         @empty
                             <tr>
                                 <td colspan="2" class="px-4 py-2 text-center text-gray-500">
+                                    No data available
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table> --}}
+                <table class="min-w-full table-auto text-xs mt-4">
+                    <thead class="bg-gray-100 text-left">
+                        <tr class="border-b border-t border-gray-200">
+                            <th class="px-4 py-2 text-nowrap" width="30%">Abbreviation</th>
+                            <th class="px-4 py-2 text-nowrap">Fullname</th>
+                            <th class="px-4 py-2 text-nowrap">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($leaveTypes as $leaveType)
+                            <tr class="hover:bg-gray-50">
+
+                                <td class="px-4 py-2"
+                                    wire:click="startEdit({{ $leaveType->id }}, '{{ $leaveType->abbreviation }}', '{{ $leaveType->leave_type }}')">
+                                    @if ($editingId === $leaveType->id)
+                                        <input type="text" wire:model.live="editAbbreviation"
+                                            wire:keydown.enter="saveEdit" wire:keydown.escape="$set('editingId', null)"
+                                            class="w-full text-xs p-1 border border-gray-200 rounded" />
+                                    @else
+                                        {{ $leaveType->abbreviation }}
+                                    @endif
+                                </td>
+
+                                <td class="px-4 py-2"
+                                    wire:click="startEdit({{ $leaveType->id }}, '{{ $leaveType->abbreviation }}', '{{ $leaveType->leave_type }}')">
+                                    @if ($editingId === $leaveType->id)
+                                        <input type="text" wire:model.live="editFullName"
+                                            wire:keydown.enter="saveEdit" wire:keydown.escape="$set('editingId', null)"
+                                            class="w-full text-xs p-1 border border-gray-200 rounded" />
+                                    @else
+                                        {{ $leaveType->leave_type }}
+                                    @endif
+                                </td>
+
+                                <td class="px-4 py-2 text-nowrap whitespace-nowrap">
+                                    @if ($editingId === $leaveType->id)
+                                        <button wire:click="saveEdit"
+                                            class="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                                            Save
+                                        </button>
+                                        <button wire:click="$set('editingId', null)"
+                                            class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 ml-1">
+                                            Cancel
+                                        </button>
+                                    @else
+                                        <button
+                                            wire:click="startEdit({{ $leaveType->id }}, '{{ $leaveType->abbreviation }}', '{{ $leaveType->leave_type }}')"
+                                            class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                            <i class="fa-solid fa-pen"></i> Edit
+                                        </button>
+                                        <button wire:click="deleteLeaveType({{ $leaveType->id }})"
+                                            wire:confirm="Are you sure you want to delete the leave type: {{ $leaveType->abbreviation }}?"
+                                            class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 ml-1">
+                                            <i class="fa-solid fa-trash-can"></i> Delete
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-2 text-center text-gray-500">
                                     No data available
                                 </td>
                             </tr>
@@ -170,6 +271,23 @@
                     <input type="text" wire:model="hour_day_base"
                         class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
                     @error('hour_day_base')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
+                </div>
+                <button type="submit"
+                    class="w-full bg-slate-700 text-white py-2 rounded-md hover:bg-slate-500 cursor-pointer mt-2 mb-2">
+                    Confirm
+                </button>
+            </form>
+
+
+            <form class="w-[400px] bg-white rounded-xl p-6 shadow" wire:submit.prevent="halfDayBase">
+                <h2 class="text-gray-700 font-bold mb-4">Table 3</h2>
+                <div>
+                    <label class="block text-sm text-gray-700">Without pay credit (Half-day equivalent)</label>
+                    <input type="text" wire:model="half_day_base"
+                        class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2 text-sm">
+                    @error('half_day_base')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
                 </div>

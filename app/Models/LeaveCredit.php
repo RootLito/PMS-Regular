@@ -11,6 +11,7 @@ class LeaveCredit extends Model
         'minutes_base',
         'monthly_base',
         'yearly_base',
+        'half_day_base',
     ];
 
 
@@ -19,6 +20,7 @@ class LeaveCredit extends Model
         'minutes_base' => 'array',
         'monthly_base' => 'array',
         'yearly_base' => 'array',
+        'half_day_base' => 'array',
     ];
 }
 

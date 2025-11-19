@@ -3,29 +3,10 @@
         <h2 class="text-5xl font-bold text-gray-700">
             LEAVE RECORD
         </h2>
-        {{-- <div class="flex items-center gap-4">
-            <select wire:model.live="startYear" id="startYear"
-                class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
-                <option value="" disabled>Select Start Year</option>
-                @foreach ($years as $year)
-                    <option value="{{ $year }}">{{ $year }}</option>
-                @endforeach
-            </select>
-            <span class="text-2xl">-</span>
-            <select wire:model.live="endYear" id="endYear"
-                class="shadow-sm border rounded bg-white border-gray-200 px-4 py-2 w-[200px]">
-                <option value="" disabled>Select End Year</option>
-                @foreach ($years as $year)
-                    <option value="{{ $year }}">{{ $year }}</option>
-                @endforeach
-            </select>
-        </div> --}}
-
     </div>
 
     <div class="flex-1 flex gap-10">
         <div class="flex flex-col w-[400px] self-start gap-10">
-            {{-- NEW RECORD   --}}
             <div class="flex flex-col bg-white rounded-xl p-6 shadow ">
                 <h2 class="font-bold text-gray-600">Create New Record</h2>
                 <form wire:submit.prevent="saveRecord" class="flex flex-col mt-2">
@@ -39,8 +20,6 @@
                         <option value="vacation_leave">Vacation Leave</option>
                         <option value="sick_leave">Sick Leave</option>
                     </select>
-                    {{-- {{ $leave }} --}}
-
 
                     <p class="mt-2 text-sm font-semibold text-gray-700">Period</p>
                     <div class="w-full flex gap-2">
@@ -78,9 +57,6 @@
                             @endforeach
                         </select>
                     </div>
-
-
-
 
                     <div class="w-full flex gap-2">
                         <div class="flex flex-col flex-1">
@@ -132,17 +108,6 @@
                             </span>
                         </div>
                     @endif
-
-
-                    {{-- <p class="mt-2 text-sm font-semibold text-gray-700">Absence Undertime</p>
-                    <select wire:model="absence_undertime" id="absence_undertime"
-                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2" required>
-                        <option value="" disabled>Select</option>
-                        <option value="wp">With Pay</option>
-                        <option value="wop">Without Pay</option>
-                    </select> --}}
-
-
                     <div class="flex flex-col w-full">
                         <label for="remarks" class="mt-2 text-sm  font-semibold text-gray-700">Remarks</label>
                         <textarea wire:model="remarks" id="remarks"
@@ -203,24 +168,10 @@
                 <form wire:submit.prevent="generateAnnualCredits">
                     @csrf
                     <h2 class="font-bold text-gray-600">Generate Annual Credits</h2>
-
-                    {{-- <div class="w-full text-xs border border-blue-200 p-2 mt-2 rounded-md bg-blue-100 text-slate-600">
-                        <strong>Reminder:</strong> It is recommended to generate annual credits in an orderly manner to
-                        avoid miscalculations.
-                    </div> --}}
-
                     <div class="w-full text-xs border border-blue-200 p-2 mt-2 rounded-md bg-blue-100 text-slate-600">
                         <strong>Note:</strong> This will generate credits from the start of the appointed date until the
                         current year.
                     </div>
-
-                    {{-- <select wire:model.live="annualCredits" id="annualCredits"
-                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
-                        <option value="" disabled>Select Year</option>
-                        @foreach ($years as $year)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endforeach
-                    </select> --}}
                     <button type="submit"
                         class="w-full bg-slate-700 text-white py-2 text-sm rounded-md hover:bg-slate-500 cursor-pointer mt-2">
                         Generate

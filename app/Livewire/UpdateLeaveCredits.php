@@ -817,71 +817,71 @@ class UpdateLeaveCredits extends Component
         $sorted[0]['balance_sick'] = $sick;
         $sorted[0]['absence_wo_vacation'] = $woVac;
         $sorted[0]['absence_wo_sick'] = $woSick;
+        // modified 
+        // for ($i = 1; $i < count($sorted); $i++) {
+        //     $rec = $sorted[$i];
 
-        for ($i = 1; $i < count($sorted); $i++) {
-            $rec = $sorted[$i];
+        //     $earnedVac = floatval($rec['earned_vacation'] ?? 0);
+        //     $earnedSick = floatval($rec['earned_sick'] ?? 0);
 
-            $earnedVac = floatval($rec['earned_vacation'] ?? 0);
-            $earnedSick = floatval($rec['earned_sick'] ?? 0);
+        //     $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
+        //     $wpSick = floatval($rec['absence_w_sick'] ?? 0);
 
-            $wpVac = floatval($rec['absence_w_vacation'] ?? 0);
-            $wpSick = floatval($rec['absence_w_sick'] ?? 0);
+        //     $currentWoVac = floatval($rec['absence_wo_vacation'] ?? 0);
+        //     $currentWoSick = floatval($rec['absence_wo_sick'] ?? 0);
 
-            $currentWoVac = floatval($rec['absence_wo_vacation'] ?? 0);
-            $currentWoSick = floatval($rec['absence_wo_sick'] ?? 0);
+        //     $woVac += $currentWoVac;
+        //     $woSick += $currentWoSick;
 
-            $woVac += $currentWoVac;
-            $woSick += $currentWoSick;
+        //     $leaveType = strtoupper(trim($rec['particulars'][0] ?? ''));
 
-            $leaveType = strtoupper(trim($rec['particulars'][0] ?? ''));
+        //     if ($woVac > 0) {
+        //         $deduction = min($earnedVac, $woVac);
+        //         $woVac -= $deduction;
+        //         $earnedVac -= $deduction;
+        //     }
 
-            if ($woVac > 0) {
-                $deduction = min($earnedVac, $woVac);
-                $woVac -= $deduction;
-                $earnedVac -= $deduction;
-            }
+        //     if ($woVac == 0) {
+        //         if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU'])) {
+        //             $vac = round($vac + $earnedVac - $wpVac, 3);
+        //         } else {
+        //             $vac = round($vac + $earnedVac, 3);
+        //         }
+        //     } else {
+        //         $vac = round($vac - $wpVac, 3);
+        //     }
 
-            if ($woVac == 0) {
-                if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU'])) {
-                    $vac = round($vac + $earnedVac - $wpVac, 3);
-                } else {
-                    $vac = round($vac + $earnedVac, 3);
-                }
-            } else {
-                $vac = round($vac - $wpVac, 3);
-            }
+        //     if ($vac < 0) {
+        //         $woVac += abs($vac);
+        //         $vac = 0;
+        //     }
 
-            if ($vac < 0) {
-                $woVac += abs($vac);
-                $vac = 0;
-            }
+        //     if ($woSick > 0) {
+        //         $deduction = min($earnedSick, $woSick);
+        //         $woSick -= $deduction;
+        //         $earnedSick -= $deduction;
+        //     }
 
-            if ($woSick > 0) {
-                $deduction = min($earnedSick, $woSick);
-                $woSick -= $deduction;
-                $earnedSick -= $deduction;
-            }
+        //     if ($woSick == 0) {
+        //         if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU'])) {
+        //             $sick = round($sick + $earnedSick - $wpSick, 3);
+        //         } else {
+        //             $sick = round($sick + $earnedSick, 3);
+        //         }
+        //     } else {
+        //         $sick = round($sick - $wpSick, 3);
+        //     }
 
-            if ($woSick == 0) {
-                if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU'])) {
-                    $sick = round($sick + $earnedSick - $wpSick, 3);
-                } else {
-                    $sick = round($sick + $earnedSick, 3);
-                }
-            } else {
-                $sick = round($sick - $wpSick, 3);
-            }
+        //     if ($sick < 0) {
+        //         $woSick += abs($sick);
+        //         $sick = 0;
+        //     }
 
-            if ($sick < 0) {
-                $woSick += abs($sick);
-                $sick = 0;
-            }
-
-            $sorted[$i]['balance_vacation'] = $vac;
-            $sorted[$i]['balance_sick'] = $sick;
-            $sorted[$i]['absence_wo_vacation'] = $woVac;
-            $sorted[$i]['absence_wo_sick'] = $woSick;
-        }
+        //     $sorted[$i]['balance_vacation'] = $vac;
+        //     $sorted[$i]['balance_sick'] = $sick;
+        //     $sorted[$i]['absence_wo_vacation'] = $woVac;
+        //     $sorted[$i]['absence_wo_sick'] = $woSick;
+        // }
         LeaveRecordCard::where('employee_id', $this->id)
             ->update(['records' => $sorted]);
         $this->loadData();
