@@ -71,31 +71,56 @@ class LeaveCreditsConfig extends Component
         $this->fetchData();
     }
 
+    // public function halfDayBase()
+    // {
+    //     $startValue = $this->half_day_base;
+    //     $endValue = 0.000;
+    //     $fullRangeDays = 30.00;
+    //     $stepSize = 0.50;
+    //     $slope = ($startValue - $endValue) / $fullRangeDays;
+
+    //     $half_day_base = [];
+
+    //     for ($D = 0; $D <= $fullRangeDays; $D += $stepSize) {
+    //         $value = $startValue - ($slope * $D);
+    //         $key = number_format($D, 2, '.', '');
+    //         $half_day_base[$key] = number_format(max(0, $value), 3, '.', '');
+    //     }
+
+    //     LeaveCredit::updateOrCreate(
+    //         ['id' => 1],
+    //         ['half_day_base' => $half_day_base]
+    //     );
+
+    //     $this->halfDayBaseArray = $half_day_base;
+    //     $this->dispatch('success', message: 'Leave without pay conversion saved!');
+    //     $this->fetchData();
+    // }
     public function halfDayBase()
     {
-        $startValue = $this->half_day_base;
+        $startValue = $this->half_day_base; 
         $endValue = 0.000;
-        $fullRangeDays = 30.00;
-        $stepSize = 0.50;
-        $slope = ($startValue - $endValue) / $fullRangeDays;
-
+        $keyStart = 0.50;      
+        $keyEnd = 30.00;      
+        $stepSize = 0.50;   
+        $totalSteps = ($keyEnd - $keyStart) / $stepSize + 1;
+        $valueStep = ($startValue - $endValue) / ($totalSteps - 1); 
         $half_day_base = [];
-
-        for ($D = 0; $D <= $fullRangeDays; $D += $stepSize) {
-            $value = $startValue - ($slope * $D);
+        for ($D = $keyStart; $D <= $keyEnd + 0.001; $D += $stepSize) {
+            $stepIndex = ($D - $keyStart) / $stepSize;
+            $value = $startValue - ($valueStep * $stepIndex);
             $key = number_format($D, 2, '.', '');
             $half_day_base[$key] = number_format(max(0, $value), 3, '.', '');
         }
-
         LeaveCredit::updateOrCreate(
             ['id' => 1],
             ['half_day_base' => $half_day_base]
         );
-
         $this->halfDayBaseArray = $half_day_base;
         $this->dispatch('success', message: 'Leave without pay conversion saved!');
         $this->fetchData();
     }
+
 
 
     public function leaveTypes()

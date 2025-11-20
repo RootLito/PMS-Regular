@@ -340,7 +340,7 @@
                                 </td>
 
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ isset($rec['earned_vacation']) ? number_format($rec['earned_vacation'], 2) : '' }}
+                                    {{ isset($rec['earned_vacation']) ? number_format($rec['earned_vacation'], 3) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ !empty($rec['absence_w_vacation']) ? $rec['absence_w_vacation'] : '' }}
@@ -353,7 +353,7 @@
                                 </td>
 
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
-                                    {{ isset($rec['earned_sick']) ? number_format($rec['earned_sick'], 2) : '' }}
+                                    {{ isset($rec['earned_sick']) ? number_format($rec['earned_sick'], 3) : '' }}
                                 </td>
                                 <td class="border border-gray-200 p-1 whitespace-nowrap">
                                     {{ !empty($rec['absence_w_sick']) ? $rec['absence_w_sick'] : '' }}
