@@ -12,10 +12,17 @@
                 <form wire:submit.prevent="saveRecord" class="flex flex-col mt-2">
                     @csrf
 
+                    @if ($errors->any())
+                        <div class="border border-red-200 p-2 mt-2 mb-2 rounded-md bg-red-100 text-red-700">
+                            @foreach ($errors->all() as $error)
+                                <p class="text-xs">{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    @endif
 
                     <p class="mt-2 text-sm font-semibold text-gray-700">Leave Type</p>
-                    <select wire:model.live="leave" id="leave"
-                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2" required>
+                    <select wire:model="leave" id="leave"
+                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
                         <option value="" disabled selected>Select Leave</option>
                         <option value="vacation_leave">Vacation Leave</option>
                         <option value="sick_leave">Sick Leave</option>
@@ -26,27 +33,16 @@
                         <div class="flex flex-col w-full">
                             <select wire:model.live="period_month" id="period_month"
                                 class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-
                                 <option value="" disabled>Select Month</option>
                                 @foreach ($months as $m)
                                     <option value="{{ $m['num'] }}">{{ $m['name'] }}</option>
                                 @endforeach
-
                             </select>
-
-                            @error('period_month')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
-
                         </div>
+
                         <div class="flex flex-col w-full">
                             <input type="text" id="period_day" wire:model.live="period_day"
                                 class="mt-1 block w-full h-10 border border-gray-200 bg-gray-50 rounded-md px-2">
-
-
-                            @error('period_day')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
                         </div>
 
                         <select wire:model.live="period_year" id="period_year"
@@ -69,7 +65,6 @@
                                     <option value="{{ $type->abbreviation }}">{{ $type->abbreviation }}</option>
                                 @endforeach
                             </select>
-
                         </div>
 
                         <div class="flex items-center gap-1">
@@ -98,23 +93,18 @@
                         </div>
                     </div>
 
-                    @if ($errors->has('leaveDays') || $errors->has('leaveHours') || $errors->has('leaveMinutes'))
-                        <div class="w-full mt-2">
-                            <span class="text-red-500 text-xs">
-                                {{ $errors->first('selected_leave') }}
-                                {{ $errors->first('leaveDays') }}
-                                {{ $errors->first('leaveHours') }}
-                                {{ $errors->first('leaveMinutes') }}
-                            </span>
-                        </div>
-                    @endif
+                    <p class="mt-2 text-sm font-semibold text-gray-700">Leave Deduction</p>
+                    <select wire:model="leave_deduction" id="leave_deduction"
+                        class="rounded-md h-10 border border-gray-200 bg-gray-50 p-2 w-full mt-2">
+                        <option value="" disabled selected>Select</option>
+                        <option value="with_pay">With Pay</option>
+                        <option value="without_pay">Without Pay</option>
+                    </select>
+
                     <div class="flex flex-col w-full">
                         <label for="remarks" class="mt-2 text-sm  font-semibold text-gray-700">Remarks</label>
                         <textarea wire:model="remarks" id="remarks"
                             class="mt-1 block w-full h-24 text-sm border border-gray-200 bg-gray-50 rounded-md p-2 resize-none"></textarea>
-                        @error('remarks')
-                            <span class="text-red-500 text-xs">{{ $message }}</span>
-                        @enderror
                     </div>
 
                     <button type="submit"
@@ -122,6 +112,7 @@
                         Create Record
                     </button>
                 </form>
+
             </div>
 
 

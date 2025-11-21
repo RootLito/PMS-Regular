@@ -30,7 +30,8 @@ class UpdateLeaveCredits extends Component
     public $remarks = "";
     public $annualCredits;
     public $leave = "";
-    public $absence_undertime = "";
+    public $leave_deduction = "";
+    public $absence_undertime;
     public $added_period;
     public $added_vac;
     public $added_sick;
@@ -38,6 +39,27 @@ class UpdateLeaveCredits extends Component
     public $years = [];
     public $months = [];
     public $transferredCredits = [];
+
+
+
+    protected $rules = [
+        'leave' => 'required',
+        'period_month' => 'required',
+        'period_day' => 'required',
+        'period_year' => 'required',
+        'selected_leave' => 'required',
+        
+        'leaveDays' => 'required|numeric|digits_between:1,2|min:0|max:31',
+        'leaveHours' => 'required|numeric|digits:2|min:0|max:7',
+        'leaveMinutes' => 'required|numeric|digits:2|min:0|max:59',
+        
+        'leave_deduction' => 'required',
+    ];
+
+
+
+
+
     // INITIAL -------------------------------------
     public function mount($id)
     {
@@ -226,9 +248,30 @@ class UpdateLeaveCredits extends Component
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // SAVE NEW RECORD------------------------
     public function saveRecord()
     {
+        $this->validate();
         $record = LeaveRecordCard::where('employee_id', $this->id)->first();
         if (!$record || !$record->records) {
             $this->dispatch(event: 'error', message: 'No annual records exist. Generate annual credits first.');
@@ -302,7 +345,7 @@ class UpdateLeaveCredits extends Component
         }
 
         $newEntry = [
-            'generated' => false, 
+            'generated' => false,
             'period_month' => (int) $this->period_month,
             'period_day' => $this->period_day,
             'period_year' => (int) $this->period_year,
@@ -321,30 +364,54 @@ class UpdateLeaveCredits extends Component
             'balance_sick' => $prevSick,
         ];
 
+
+
+        // ***************************************************
+        // ** THE CORE LOGIC CHANGE STARTS HERE **
+        // ***************************************************
+
+        $deductionType = $this->leave_deduction;
+
         if ($this->leave == "vacation_leave") {
-            $deductible = min($totalDed, $prevVac);
-            $wop = max(0, $totalDed - $prevVac);
+            if ($deductionType == "with_pay") {
 
-            $earnedVac = $getEarnedCredit($totalDed);
-
-            $newEntry['earned_vacation'] = $earnedVac;
-            $newEntry['absence_w_vacation'] = $deductible;
-            $newEntry['absence_wo_vacation'] = $wop;
-            $newEntry['balance_vacation'] = $prevVac;
+                if ($prevVac < $totalDed) {
+                    $this->dispatch(event: 'error', message: 'Not enough Vacation Leave balance for With Pay deduction.');
+                    return;
+                }
+                $newEntry['balance_vacation'] = $prevVac - $totalDed;
+                $newEntry['absence_w_vacation'] = $totalDed;
+                $newEntry['earned_vacation'] = 0;
+            } elseif ($deductionType == "without_pay") {
+                $newEntry['absence_wo_vacation'] = $totalDed;
+                $earnedVac = $getEarnedCredit($totalDed);
+                $newEntry['earned_vacation'] = $earnedVac;
+            }
         } elseif ($this->leave == "sick_leave") {
-            $deductible = min($totalDed, $prevSick);
-            $wop = max(0, $totalDed - $prevSick);
-
-            $earnedSick = $getEarnedCredit($totalDed);
-
-            $newEntry['earned_sick'] = $earnedSick;
-            $newEntry['absence_w_sick'] = $deductible;
-            $newEntry['absence_wo_sick'] = $wop;
-            $newEntry['balance_sick'] = $prevSick;
+            if ($deductionType == "with_pay") {
+                if ($prevSick < $totalDed) {
+                    $this->dispatch(event: 'error', message: 'Not enough Sick Leave balance for With Pay deduction.');
+                    return;
+                }
+                $newEntry['balance_sick'] = $prevSick - $totalDed;
+                $newEntry['absence_w_sick'] = $totalDed;
+                $newEntry['earned_sick'] = 0;
+            } elseif ($deductionType == "without_pay") {
+                $newEntry['absence_wo_sick'] = $totalDed;
+                $earnedSick = $getEarnedCredit($totalDed);
+                $newEntry['earned_sick'] = $earnedSick;
+            }
         } else {
             $this->dispatch(event: 'error', message: 'Unknown leave type.');
             return;
         }
+
+        // ***************************************************
+        // ** THE CORE LOGIC CHANGE ENDS HERE **
+        // ***************************************************
+
+
+
 
         $records->push($newEntry);
 
@@ -352,7 +419,7 @@ class UpdateLeaveCredits extends Component
             $aDay = intval(explode('-', $a['period_day'])[0]);
             $bDay = intval(explode('-', $b['period_day'])[0]);
 
-            $aGenerated = $a['generated']; 
+            $aGenerated = $a['generated'];
             $bGenerated = $b['generated'];
             if ($a['period_year'] <=> $b['period_year']) {
                 return $a['period_year'] <=> $b['period_year'];
@@ -394,38 +461,28 @@ class UpdateLeaveCredits extends Component
 
             $vac = round($vac + $earnedVac, 3);
 
-            $actualPaidVac = 0;
             if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU']) && $wpVac > 0) {
                 if ($vac >= $wpVac) {
                     $vac = round($vac - $wpVac, 3);
                     $actualPaidVac = $wpVac;
                 } else {
-                    $woVac += $wpVac;
                     $actualPaidVac = 0;
                 }
-            }
-
-            if ($vac < 0) {
-                $woVac += abs($vac);
-                $vac = 0;
+            } else {
+                $actualPaidVac = 0;
             }
 
             $sick = round($sick + $earnedSick, 3);
 
-            $actualPaidSick = 0;
             if (in_array($leaveType, ['VL', 'FL', 'SL', 'T', 'UT', 'TU']) && $wpSick > 0) {
                 if ($sick >= $wpSick) {
                     $sick = round($sick - $wpSick, 3);
                     $actualPaidSick = $wpSick;
                 } else {
-                    $woSick += $wpSick;
                     $actualPaidSick = 0;
                 }
-            }
-
-            if ($sick < 0) {
-                $woSick += abs($sick);
-                $sick = 0;
+            } else {
+                $actualPaidSick = 0;
             }
 
             $sorted[$i]['balance_vacation'] = $vac;
@@ -442,6 +499,29 @@ class UpdateLeaveCredits extends Component
         $this->loadData();
         $this->dispatch(event: 'success', message: 'Record inserted and balances updated');
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // DELETE RECORD------------------------
