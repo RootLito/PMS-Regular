@@ -55,7 +55,6 @@ class RegularPayrollData extends Component
 
         $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved'])->latest()->first();
 
-        // dd($this->assigned);
     }
 
     public function toggleOffices()

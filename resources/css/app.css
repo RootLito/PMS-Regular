@@ -11,33 +11,56 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* .print {
+
+
+.print{
     width: 794px;
     height: 1123px;
     background-color: white;
     position: relative;
-    padding: 96px;
+    padding: 0.5in;
     font-family: 'Cambria', serif;
-    font-size: 12pt;
+    font-size: 10pt;
     box-sizing: border-box;
-} */
+}
+
+.header{
+    width: 100%;
+    display: flex;
+    border: 1px solid black;
+}
+
+.header .date{
+    width: 1.5in;
+    border-right: 1px solid black;
+
+    display: grid;
+    place-items: center;
+}
+
+.header img{
+    margin-bottom: 10px;
+}
+
+
 
 
 @media print {
-    body * {
-        visibility: hidden;
-    }
-
-    .print, .print * {
-        visibility: visible;
-    }
-
-    .print {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 794px;
-        height: 1123px;
-        background-color: white;
-    }
+  body * {
+    visibility: hidden;
+  }
+  
+  .print, .print * {
+    visibility: visible;
+  }
+  
+  .print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 794px;
+    height: 1123px;
+    background-color: white;
+  }
 }
+

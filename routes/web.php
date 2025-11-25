@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Payslip;
 
 //MAIN
 Route::get('/', function () {
@@ -42,6 +43,10 @@ Route::middleware('auth')->group(function () {
         return view('regular.regular-employee-update', ['id' => $id]);
     })->name('regular-employee.update');
 
+
+
+    Route::get('/regular-employee/payslip/{employeeId}', [Payslip::class, 'printPayslip'])
+        ->name('regular-employee.payslip');
 
 
 

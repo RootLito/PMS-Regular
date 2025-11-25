@@ -33,4 +33,9 @@ class Employee extends Model
     {
         return $this->belongsTo(Office::class, 'office', 'office');
     }
+
+    public function leaveRecordCard()
+    {
+        return $this->hasOne(LeaveRecordCard::class, 'employee_id');
+    }
 }

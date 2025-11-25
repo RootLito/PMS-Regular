@@ -217,7 +217,7 @@
                 </div>
             </div>
 
-            <div class="overflow-auto mt-6 print">
+            <div class="overflow-auto mt-6">
                 <table class="min-w-full table-fixed border border-gray-200 text-xs mb-2">
                     <thead>
                         <tr class="bg-gray-100 text-center">

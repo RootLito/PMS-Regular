@@ -71,11 +71,11 @@
                         </a>
 
 
-                        {{-- <a href="{{ route('employee.payslip', $employee->id) }}"
+                        <a href="{{ route('regular-employee.payslip', ['employeeId' => $employee->id]) }}"
                             class="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded cursor-pointer flex items-center gap-1"
                             title="View Payslip">
                             <i class="fas fa-file-invoice"></i> Payslip
-                        </a> --}}
+                        </a>
 
                         <button wire:click="confirmDelete({{ $employee->id }})"
                             class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded flex items-center gap-1 cursor-pointer"

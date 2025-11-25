@@ -48,11 +48,11 @@ class UpdateLeaveCredits extends Component
         'period_day' => 'required',
         'period_year' => 'required',
         'selected_leave' => 'required',
-        
+
         'leaveDays' => 'required|numeric|digits_between:1,2|min:0|max:31',
         'leaveHours' => 'required|numeric|digits:2|min:0|max:7',
         'leaveMinutes' => 'required|numeric|digits:2|min:0|max:59',
-        
+
         'leave_deduction' => 'required',
     ];
 
@@ -366,9 +366,6 @@ class UpdateLeaveCredits extends Component
 
 
 
-        // ***************************************************
-        // ** THE CORE LOGIC CHANGE STARTS HERE **
-        // ***************************************************
 
         $deductionType = $this->leave_deduction;
 
@@ -406,32 +403,51 @@ class UpdateLeaveCredits extends Component
             return;
         }
 
-        // ***************************************************
-        // ** THE CORE LOGIC CHANGE ENDS HERE **
-        // ***************************************************
-
 
 
 
         $records->push($newEntry);
 
+        // $sortedCollection = collect($records)->sort(function ($a, $b) {
+        //     $aDay = intval(explode('-', $a['period_day'])[0]);
+        //     $bDay = intval(explode('-', $b['period_day'])[0]);
+
+        //     $aGenerated = $a['generated'];
+        //     $bGenerated = $b['generated'];
+        //     if ($a['period_year'] <=> $b['period_year']) {
+        //         return $a['period_year'] <=> $b['period_year'];
+        //     }
+        //     if ($a['period_month'] <=> $b['period_month']) {
+        //         return $a['period_month'] <=> $b['period_month'];
+        //     }
+        //     if ($aDay <=> $bDay) {
+        //         return $aDay <=> $bDay;
+        //     }
+        //     return $aGenerated <=> $bGenerated;
+        // })->values();
         $sortedCollection = collect($records)->sort(function ($a, $b) {
             $aDay = intval(explode('-', $a['period_day'])[0]);
             $bDay = intval(explode('-', $b['period_day'])[0]);
 
-            $aGenerated = $a['generated'];
-            $bGenerated = $b['generated'];
-            if ($a['period_year'] <=> $b['period_year']) {
+            if ($a['period_year'] !== $b['period_year']) {
                 return $a['period_year'] <=> $b['period_year'];
             }
-            if ($a['period_month'] <=> $b['period_month']) {
+
+            if ($a['period_month'] !== $b['period_month']) {
                 return $a['period_month'] <=> $b['period_month'];
             }
-            if ($aDay <=> $bDay) {
+
+            if ($a['generated'] !== $b['generated']) {
+                return $a['generated'] ? 1 : -1;
+            }
+
+            if ($aDay !== $bDay) {
                 return $aDay <=> $bDay;
             }
-            return $aGenerated <=> $bGenerated;
+
+            return 0;
         })->values();
+
         $sorted = $sortedCollection->toArray();
         $first = $sorted[0];
 

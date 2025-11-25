@@ -19,6 +19,7 @@ class Signatories extends Component
     public $certified_by = '';
     public $funds_available = '';
     public $approved_payment = '';
+    public $prepared_by2 = '';
     
     public $allSignatories;
     public $assigned;
@@ -32,7 +33,7 @@ class Signatories extends Component
     public function mount()
     {
         $this->allSignatories = Signatory::latest()->get();
-        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved'])
+        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved', 'prepared2'])
             ->latest()->first(); 
     }
 
@@ -121,6 +122,7 @@ class Signatories extends Component
             'certified_by' => 'required|exists:signatories,id', 
             'funds_available' => 'required|exists:signatories,id', 
             'approved_payment' => 'required|exists:signatories,id', 
+            'prepared_by2' => 'required|exists:signatories,id', 
         ]);
 
         Assign::create([
@@ -129,10 +131,11 @@ class Signatories extends Component
             'certified_by' => $this->certified_by,
             'funds_available' => $this->funds_available,
             'approved_payment' => $this->approved_payment,
+            'prepared_by2' => $this->prepared_by2,
         ]);
 
         $this->dispatch('success', message: 'New signatory assigned!');
-        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved'])
+        $this->assigned = Assign::with(['prepared', 'checked', 'certified', 'funds', 'approved', 'prepared2'])
             ->latest()->first();
 
         $this->reset([
@@ -141,6 +144,7 @@ class Signatories extends Component
             'certified_by',
             'funds_available',
             'approved_payment',
+            'prepared_by2',
         ]);
     }
 

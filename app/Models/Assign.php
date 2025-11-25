@@ -14,6 +14,7 @@ class Assign extends Model
         'certified_by',
         'funds_available',
         'approved_payment',
+        'prepared_by2',
     ];
 
     public function prepared()
@@ -40,4 +41,11 @@ class Assign extends Model
     {
         return $this->belongsTo(Signatory::class, 'approved_payment'); 
     }
+
+    public function prepared2()
+    {
+        return $this->belongsTo(Signatory::class, 'prepared_by2');
+    }
+
+    
 }
