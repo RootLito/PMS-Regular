@@ -54,168 +54,272 @@
                 </tr>
                 {{-- BORDERS   --}}
                 <tr>
-    <td class="border-l border-black px-1">Basic Salary</td>
-    <td class="text-right px-1">
-        {{ $employeeData->monthly_rate ? number_format($employeeData->monthly_rate, 2) : '' }}
-    </td>
-    <td class="border-l border-black px-1">TAX</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->tax ? number_format($employeeData->contribution->tax, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">1ST PERIOD</td>
-    <td class="border-r border-black text-right px-1">
-        {{ $employeeData->contribution?->first_half ? number_format($employeeData->contribution->first_half, 2) : '' }}
-    </td>
-</tr>
+                    <td class="border-l border-black px-1">Basic Salary</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->monthly_rate ? number_format($employeeData->monthly_rate, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black px-1">TAX</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->tax ? number_format($employeeData->contribution->tax, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">1ST PERIOD</td>
+                    <td class="border-r border-black text-right px-1">
+                        {{ $employeeData->contribution?->first_half ? number_format($employeeData->contribution->first_half, 2) : '' }}
+                    </td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black px-1">P E R A</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->pera ? number_format($employeeData->contribution->pera, 2) : '' }}
-    </td>
-    <td class="border-l border-black px-1">PHIC</td>
-    <td class="border-r border-black text-right px-1">
-        {{ $employeeData->contribution?->phic ? number_format($employeeData->contribution->phic, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black px-1">P E R A</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->pera ? number_format($employeeData->contribution->pera, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black px-1">PHIC</td>
+                    <td class="border-r border-black text-right px-1">
+                        {{ $employeeData->contribution?->phic ? number_format($employeeData->contribution->phic, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">GSIS LIFE & RET.</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->gsis_ps ? number_format($employeeData->contribution->gsis_ps, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">2ND PERIOD</td>
-    <td class="border-r border-black text-right px-1">
-        {{ $employeeData->contribution?->second_half ? number_format($employeeData->contribution->second_half, 2) : '' }}
-    </td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">GSIS LIFE & RET.</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_ps ? number_format($employeeData->contribution->gsis_ps, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">2ND PERIOD</td>
+                    <td class="border-r border-black text-right px-1">
+                        {{ $employeeData->contribution?->second_half ? number_format($employeeData->contribution->second_half, 2) : '' }}
+                    </td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">P'IBIG 1</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->hdmf_mp2 ? number_format($employeeData->contribution->hdmf_mp2, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">P'IBIG 1</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->hdmf_mp2 ? number_format($employeeData->contribution->hdmf_mp2, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">P'IBIG 2</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->hdmf_ps ? number_format($employeeData->contribution->hdmf_ps, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">P'IBIG 2</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->hdmf_ps ? number_format($employeeData->contribution->hdmf_ps, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black px-1">SG: {{ $employeeData->salary_grade ?? '' }}</td>
-    <td></td>
-    <td class="border-l border-black px-1">G POL-REG</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->gsis_pol ? number_format($employeeData->contribution->gsis_pol, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black px-1">SG: {{ $employeeData->salary_grade ?? '' }}</td>
+                    <td></td>
+                    <td class="border-l border-black px-1">G POL-REG</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_pol ? number_format($employeeData->contribution->gsis_pol, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black px-1">Step: {{ $employeeData->step ?? '' }}</td>
-    <td></td>
-    <td class="border-l border-black px-1">G EDUC LOAN</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->gsis_cpl ? number_format($employeeData->contribution->gsis_cpl, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black px-1">Step: {{ $employeeData->step ?? '' }}</td>
+                    <td></td>
+                    <td class="border-l border-black px-1">G EDUC LOAN</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_cpl ? number_format($employeeData->contribution->gsis_cpl, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">G CONSOL</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->gsis_consoloan ? number_format($employeeData->contribution->gsis_consoloan, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">G CONSOL</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_consoloan ? number_format($employeeData->contribution->gsis_consoloan, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">G HELP</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->gsis_emer ? number_format($employeeData->contribution->gsis_emer, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">G HELP</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_emer ? number_format($employeeData->contribution->gsis_emer, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">G ELA</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->gsis_gfal ? number_format($employeeData->contribution->gsis_gfal, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">G ELA</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_gfal ? number_format($employeeData->contribution->gsis_gfal, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">HDMF MPL</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->hdmf_mpl ? number_format($employeeData->contribution->hdmf_mpl, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">HDMF MPL</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->hdmf_mpl ? number_format($employeeData->contribution->hdmf_mpl, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
 
-<tr>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black px-1">HDMF HL</td>
-    <td class="text-right px-1">
-        {{ $employeeData->contribution?->hdmf_hl ? number_format($employeeData->contribution->hdmf_hl, 2) : '' }}
-    </td>
-    <td class="border-l border-black"></td>
-    <td></td>
-    <td class="border-l border-black"></td>
-    <td class="border-r border-black"></td>
-</tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">HDMF HL</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->hdmf_hl ? number_format($employeeData->contribution->hdmf_hl, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">DARECO</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->dareco ? number_format($employeeData->contribution->dareco, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">BFAR DISALLOWANCE</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->bfar_provident ? number_format($employeeData->contribution->bfar_provident, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">PROVIDENT FUND</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->bfar_provident ? number_format($employeeData->contribution->bfar_provident, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">SSS Cont.</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->gsis_ps ? number_format($employeeData->contribution->gsis_ps, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">UCPB</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->ucpb_savings ? number_format($employeeData->contribution->ucpb_savings, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">ISLAI Cap. Cont.</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->isda_savings_cap_con ? number_format($employeeData->contribution->isda_savings_cap_con, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">TAGUM Coop SC</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->tagum_coop_sc ? number_format($employeeData->contribution->tagum_coop_sc, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
+                <tr>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black px-1">TAGUM Coop SAV</td>
+                    <td class="text-right px-1">
+                        {{ $employeeData->contribution?->tagumcoop_sl ? number_format($employeeData->contribution->tagumcoop_sl, 2) : '' }}
+                    </td>
+                    <td class="border-l border-black"></td>
+                    <td></td>
+                    <td class="border-l border-black"></td>
+                    <td class="border-r border-black"></td>
+                </tr>
+
 
 
 

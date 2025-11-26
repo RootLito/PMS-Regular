@@ -29,33 +29,20 @@
                 </ul>
             </div>
         @endif
-
         @if (session()->has('message'))
             <div
                 class="absolute top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow z-50 max-w-sm">
                 {{ session('message') }}
             </div>
         @endif
-
         <div class="w-[224px] h-screen sticky top-0 bg-white">
             @include('partials.sidebar')
         </div>
-        {{-- <div class="w-56 h-screen sticky top-0 bg-white">
-            @if (auth()->check() && auth()->user()->role === 'admin')
-                @include('partials.sidebar') 
-            @elseif (auth()->check() && auth()->user()->role === 'regular')
-                @include('partials.sidebar-admin') 
-            @endif
-        </div> --}}
-
-
-
         <div class="flex-1 min-h-screen bg-gray-200 flex flex-col">
             @include('partials.navbar')
             @yield('content')
         </div>
     </div>
-
 
     @once
         <script>
@@ -64,15 +51,12 @@
                     "progressBar": true,
                     "positionClass": "toast-bottom-right"
                 };
-
                 window.addEventListener('success', event => {
                     toastr.success(event.detail.message);
                 });
-
                 window.addEventListener('warning', event => {
                     toastr.warning(event.detail.message);
                 });
-
                 window.addEventListener('error', event => {
                     toastr.error(event.detail.message);
                 });
@@ -82,5 +66,4 @@
     @livewireScripts
     @stack('scripts')
 </body>
-
 </html>
