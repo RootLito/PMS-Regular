@@ -3,45 +3,7 @@
         <h2 class="text-5xl font-bold text-gray-700">
             CONTRIBUTION
         </h2>
-        {{-- <div class="flex gap-2">
-            <select wire:model.live="month" class="h-10 border border-gray-200 shadow-sm rounded-md px-2 pr-8 bg-white">
-                <option value="" disabled>Select Month</option>
-                @foreach ($months as $num => $name)
-                <option value="{{ $num }}" {{ $month==$num ? 'selected' : '' }}>{{ $name }}
-                </option>
-                @endforeach
-            </select>
-
-            <select wire:model.live="year" class="h-10 border border-gray-200 shadow-sm rounded-md px-2 pr-8 bg-white">
-                <option value="" disabled>Select Year</option>
-                @foreach ($years as $yearOption)
-                <option value="{{ $yearOption }}" {{ $year==$yearOption ? 'selected' : '' }}>{{ $yearOption }}
-                </option>
-                @endforeach
-            </select>
-
-            <button wire:click.prevent="updatePercov" wire:loading.attr="disabled" wire:target="updatePercov"
-                class="w-48 h-10 bg-slate-700 rounded-md text-white cursor-pointer hover:bg-slate-900 mr-4 text-sm">
-                <span wire:loading.remove wire:target="updatePercov">Update PerCov</span>
-                <span wire:loading wire:target="updatePercov">Updating...</span>
-            </button>
-
-            <select wire:model.live="selectedContribution"
-                class="block h-10 border border-gray-200 bg-white text-sm rounded-md px-2 cursor-pointer shadow-sm">
-                <option value="">-- Select Contribution --</option>
-                <option value="hdmf_pi">HDMF - PI</option>
-                <option value="hdmf_mp2">HDMF - MP2</option>
-                <option value="hdmf_mpl">HDMF - MPL</option>
-                <option value="hdmf_cl">HDMF - CL</option>
-                <option value="dareco">DARECO</option>
-                <option value="sss_ec_wisp">SSS, EC, WISP</option>
-            </select>
-            <button wire:click.prevent="exportContribution"
-                class="text-sm px-10 h-10 bg-slate-700 rounded-md text-white cursor-pointer">
-                <i class="fas fa-file-export mr-1"></i>
-                Export
-            </button>
-        </div> --}}
+        
     </div>
 
 

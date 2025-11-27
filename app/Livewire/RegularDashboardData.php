@@ -7,9 +7,14 @@ use App\Models\Employee;
 use App\Models\LeaveRecordCard;
 use App\Models\Contribution;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 class RegularDashboardData extends Component
 {
+    public $sort = '';
+
+
+
     public function render()
     {
         $employees = Employee::all();
@@ -17,6 +22,17 @@ class RegularDashboardData extends Component
         $totalEmployees = $employees->count();
         $male = $employees->where('gender', 'Male')->count();
         $female = $employees->where('gender', 'Female')->count();
+        
+        $employees = $employees->sortByDesc(function ($emp) {
+            if (!$emp->appointed_date) {
+                return 0;
+            }
+            
+            $appointmentDate = Carbon::parse($emp->appointed_date);
+            $diff = $appointmentDate->diff(now());
+            
+            return ($diff->y * 12) + $diff->m;
+        });
 
         $serviceGroups = [
             'below_5' => 0,
@@ -29,8 +45,13 @@ class RegularDashboardData extends Component
             if (!$emp->appointed_date)
                 continue;
 
-            $emp->years_of_service = (int) Carbon::parse($emp->appointed_date)->diffInYears(now());
-            $years = $emp->years_of_service;
+            $appointmentDate = Carbon::parse($emp->appointed_date);
+            $diff = $appointmentDate->diff(now());
+            $emp->years_of_service_details = [
+                'years' => $diff->y,
+                'months' => $diff->m
+            ];
+            $years = $diff->y;
             if ($years < 5) {
                 $serviceGroups['below_5']++;
             } elseif ($years <= 9) {
@@ -56,20 +77,26 @@ class RegularDashboardData extends Component
             ->where('total_net_amount', '<', 5000)
             ->get()
             ->map(function ($c) {
+                $emp = $c->employee;
                 $mi = '';
-                if ($c->employee->middlename) {
-                    $mi = strtoupper(substr($c->employee->middlename, 0, 1)) . '.';
-                } elseif ($c->employee->middle_initial) {
-                    $mi = $c->employee->middle_initial . '.';
+                if ($emp->middlename) {
+                    $mi = strtoupper(substr($emp->middlename, 0, 1)) . '.';
+                } elseif ($emp->middle_initial) {
+                    $mi = strtoupper(substr($emp->middle_initial, 0, 1)) . '.';
                 }
-
+                $suffix = '';
+                if (!empty($emp->suffix)) {
+                    $suffix = ' ' . strtoupper($emp->suffix);
+                }
                 return [
-                    'name' => strtoupper($c->employee->lastname) . ', ' .
-                        strtoupper($c->employee->firstname) . ' ' .
+                    'name' => strtoupper($emp->last_name) . ', ' .
+                        strtoupper($emp->first_name) .
+                        $suffix . ' ' .
                         $mi,
                     'net' => $c->total_net_amount
                 ];
             });
+
 
         return view('livewire.regular-dashboard-data', [
             'totalEmployees' => $totalEmployees,

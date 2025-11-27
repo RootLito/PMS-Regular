@@ -29,194 +29,232 @@
                 </div>
             </div>
         </div>
-        <div class="flex-1 bg-white rounded-lg shadow-sm p-6">
-            <p class="text-gray-600 font-semibold text-xl">Length of Service <i><b>w/Ranking</b></i></p>
-            <div class="w-full h-full grid grid-cols-[2fr_1fr] gap-4 pb-6">
-                <div>
-                    <canvas id="serviceChart" data-chart='@json($serviceGroups)' class="w-full h-full"></canvas>
-                </div>
-                <div>
+        <div class="flex-1 grid grid-cols-3 gap-10 ">
+            {{-- CHART   --}}
+            <div class="grid place-items-center bg-white rounded-lg shadow-sm p-6">
+                <canvas id="serviceChart" data-chart='@json($serviceGroups)' class="w-full h-full"></canvas>
+            </div>
+
+
+            {{-- LEAVE CREDITS   --}}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <p class="text-gray-600 font-semibold text-xl">
+                    Leave Credits <i><b>Ranking</b></i>
+                </p>
+
+                <div class="mt-4 h-full overflow-y-auto pr-2">
                     <table class="w-full text-sm text-left text-gray-700 border-collapse">
                         <thead>
-                            <tr class="bg-gray-200 border-b border-gray-300">
-                                <th class="font-semibold py-3 px-3">Name</th>
-                                <th class="font-semibold py-3 px-3" width="15%">Year(s)</th>
+                            <tr class="bg-gray-200 border-b border-gray-300 text-xs">
+                                <th class="py-2 px-3">Name</th>
+                                <th class="py-2 px-3 text-right">Vacation</th>
+                                <th class="py-2 px-3 text-right">Sick</th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            @foreach ($employees as $emp)
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-2 px-3">
-                                        {{ $emp->last_name }}, {{ $emp->first_name }}
+                            @foreach ($employees as $index => $emp)
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="py-2 px-3 text-xs" width="40%">
+                                        {{ ucfirst(strtolower($emp->last_name)) }},
+                                        {{ ucfirst(strtolower($emp->first_name)) }}
                                         {{ $emp->middlename
-                                            ? strtoupper(substr($emp->middlename, 0, 1)) . '.'
+                                            ? ucfirst(strtolower(substr($emp->middlename, 0, 1))) . '.'
                                             : ($emp->middle_initial
-                                                ? strtoupper(substr($emp->middle_initial, 0, 1)) . '.'
+                                                ? ucfirst(strtolower(substr($emp->middle_initial, 0, 1))) . '.'
                                                 : '') }}
                                     </td>
-                                    <td class="py-2 px-3 text-center">
-                                        {{ $emp->years_of_service }}
+                                    <td class="py-2 px-3 text-left font-semibold text-xs">
+                                        {{ number_format($emp->latest_vac, 3) }}
                                     </td>
+                                    <td class="py-2 px-3 text-left font-semibold text-xs">
+                                        {{ number_format($emp->latest_sick, 3) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+            </div>
 
+
+            {{-- NET BALANCE   --}}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <p class="text-gray-600 font-semibold text-xl">
+                    Net Balance <i><b>Under 5K</b></i>
+                </p>
+
+                <div class="mt-4 max-h-80 overflow-y-auto pr-2">
+                    <table class="w-full text-sm text-left text-gray-700 border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 border-b border-gray-300 text-xs">
+                                <th class="py-2 px-3">Name</th>
+                                <th class="py-2 px-3 text-right">Net Balance</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse ($underFiveK as $index => $u)
+                                <tr class="border-b border-gray-200 hover:bg-gray-50 text-xs">
+                                    <td class="py-2 px-3 ">{{ $u['name'] }}</td>
+                                    <td class="py-2 px-3 text-right font-semibold">
+                                        {{ number_format($u['net'], 2) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td class="py-2 px-3 text-center font-semibold text-gray-400" colspan="3">
+                                        No Record
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-    <div class="w-[500px] h-full grid grid-rows-2 gap-10">
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <p class="text-gray-600 font-semibold text-xl">
-                Leave Credits <i><b>Ranking</b></i>
-            </p>
 
-            <div class="mt-4 h-full overflow-y-auto pr-2">
-                <table class="w-full text-sm text-left text-gray-700 border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200 border-b border-gray-300">
-                            <th class="py-2 px-3">#</th>
-                            <th class="py-2 px-3">Name</th>
-                            <th class="py-2 px-3 text-right">Vacation</th>
-                            <th class="py-2 px-3 text-right">Sick</th>
-                        </tr>
-                    </thead>
+    {{-- SERVICE  --}}
+    <div class="w-[400px] h-full bg-white rounded-lg shadow-sm p-6">
+        <p class="text-gray-600 text-5xl text-center"><i class="fa-solid fa-award"></i></p>
+        <p class="text-gray-600 text-sm font-black text-center mb-8 mt-2"><i>LENGTH OF SERVICE RANKING</i></p>
 
-                    <tbody>
-                        @foreach ($employees as $index => $emp)
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-2 px-3">{{ $index + 1 }}</td>
-                                <td class="py-2 px-3">
-                                    {{ $emp->last_name }}, {{ $emp->first_name }}
-                                    {{ $emp->middlename
-                                        ? strtoupper(substr($emp->middlename, 0, 1)) . '.'
-                                        : ($emp->middle_initial
-                                            ? strtoupper(substr($emp->middle_initial, 0, 1)) . '.'
-                                            : '') }}
-                                </td>
-                                <td class="py-2 px-3 text-right">{{ number_format($emp->latest_vac, 3) }}</td>
-                                <td class="py-2 px-3 text-right">{{ number_format($emp->latest_sick, 3) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+        <div class="w-full grid place-items-center">
+            <select wire:model.live="sort"
+                class="shadow-sm border rounded border-gray-200 px-4 py-2 mb-8 mx-auto text-sm text-gray-600">
+                <option value="">Overall Ranking</option>
+                <option value="15_up">15+ years</option>
+                <option value="10_14">10-14 years</option>
+                <option value="5_9">5-9 years</option>
+                <option value="below_4">Below 4 years</option>
+            </select>
+
+            {{ $sort }}
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <p class="text-gray-600 font-semibold text-xl">
-                Net Balance <i><b>Under 5K</b></i>
-            </p>
 
-            <div class="mt-4 max-h-80 overflow-y-auto pr-2">
-                <table class="w-full text-sm text-left text-gray-700 border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200 border-b border-gray-300">
-                            <th class="py-2 px-3">#</th>
-                            <th class="py-2 px-3">Name</th>
-                            <th class="py-2 px-3 text-right">Net Balance</th>
-                        </tr>
-                    </thead>
+        <ul class="divide-y divide-gray-100">
+            @foreach ($employees as $emp)
+                @php
+                    $years = $emp->years_of_service_details['years'] ?? 0;
+                    $months = $emp->years_of_service_details['months'] ?? 0;
 
-                    <tbody>
-                        @forelse ($underFiveK as $index => $u)
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-2 px-3">{{ $index + 1 }}</td>
-                                <td class="py-2 px-3 font-semibold">{{ $u['name'] }}</td>
-                                <td class="py-2 px-3 text-right">{{ number_format($u['net'], 2) }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td class="py-2 px-3 text-center font-semibold text-gray-400" colspan="3">
-                                    No employee with Netpay under 5K
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                    $duration = '';
+                    if ($years > 0) {
+                        $duration .= "{$years}y ";
+                    }
+                    if ($months > 0) {
+                        $duration .= "{$months}m";
+                    }
+                    $duration = trim($duration);
 
-                </table>
-            </div>
-        </div>
+                    $medalClass = '';
+                    $rankIcon = '';
+                    $rankTextSize = 'text-2xl';
 
+                    if ($loop->iteration === 1) {
+                        $medalClass = 'text-yellow-500';
+                        $rankIcon = '<i class="fa-solid fa-medal"></i>';
+                    } elseif ($loop->iteration === 2) {
+                        $medalClass = 'text-gray-400';
+                        $rankIcon = '<i class="fa-solid fa-medal"></i>';
+                    } elseif ($loop->iteration === 3) {
+                        $medalClass = 'text-amber-700';
+                        $rankIcon = '<i class="fa-solid fa-medal"></i>';
+                    } else {
+                        $rankIcon = $loop->iteration . '.';
+                        $rankTextSize = 'text-lg text-gray-700';
+                    }
+                @endphp
+
+                <li class="flex items-center py-1">
+                    <div class="flex items-center space-x-4">
+                        <span class="font-bold w-8 text-center {{ $medalClass }} {{ $rankTextSize }}"
+                            title="Rank {{ $loop->iteration }}">
+                            {!! $rankIcon !!}
+                        </span>
+                        <div class="py-1">
+                            <div class="font-bold text-gray-700">
+                                {{ $emp->last_name }}, {{ $emp->first_name }}
+                                {{ $emp->middlename
+                                    ? strtoupper(substr($emp->middlename, 0, 1)) . '.'
+                                    : ($emp->middle_initial
+                                        ? strtoupper(substr($emp->middle_initial, 0, 1)) . '.'
+                                        : '') }}
+                            </div>
+                            <div class="font-mono text-xs text-gray-500">
+                                {{ $duration ?: 'Less than 1 month / N/A' }}
+                            </div>
+                            @if (!$emp->appointed_date)
+                                <span class="text-xs text-red-500 italic">No appointment date</span>
+                            @endif
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
     </div>
 </div>
-
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
-
     <script>
-        let serviceChart;
+        document.addEventListener('DOMContentLoaded', () => {
+            const serviceChartCanvas = document.getElementById('serviceChart');
+            if (!serviceChartCanvas) return;
 
-        function renderChart() {
-            const canvasElement = document.getElementById('serviceChart');
-            if (!canvasElement) {
-                console.error("ERROR: serviceChart canvas element not found in the DOM.");
-                return;
-            }
+            const chartData = JSON.parse(serviceChartCanvas.dataset.chart);
+            const dataValues = [
+                chartData.below_5,
+                chartData.five_to_nine,
+                chartData.ten_to_fourteen,
+                chartData.fifteen_up
+            ];
+            const labels = [
+                'Below 5 Years',
+                '5 to 9 Years',
+                '10 to 14 Years',
+                '15+ Years'
+            ];
+            const backgroundColors = [
+                'rgb(96, 166, 252)',
+                'rgb(255, 104, 108)',
+                'rgb(253, 203, 0)',
+                'rgba(5, 223, 114)'
+            ];
 
-            const ctx = canvasElement.getContext('2d');
-            if (!ctx) {
-                console.error("ERROR: Could not get 2D context from the canvas. Likely a sizing or rendering issue.");
-                return;
-            }
-
-            let data;
-            try {
-                data = JSON.parse(canvasElement.dataset.chart);
-                console.log("Chart Data Successfully Parsed:", data);
-                if (Object.values(data).every(val => val === 0)) {
-                    console.warn(
-                        "WARNING: All data values for the chart are zero. The chart will render, but will be empty.");
-                }
-            } catch (e) {
-                console.error("ERROR: Failed to parse chart data JSON:", e, "Raw data:", canvasElement.dataset.chart);
-                return;
-            }
-
-            if (serviceChart) {
-                serviceChart.destroy();
-            }
-
-            try {
-                serviceChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Below 5', '5–9', '10–14', '15+'],
-                        datasets: [{
-                            label: 'Number of Employees',
-                            data: [data.below_5, data.five_to_nine, data.ten_to_fourteen, data.fifteen_up],
-                            backgroundColor: ['#34D399', '#60A5FA', '#F87171', '#FBBF24']
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
+            window.serviceChart = new Chart(serviceChartCanvas, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Employees by Service Years',
+                        data: dataValues,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
                         },
-                        scales: {
-                            x: {
-                                beginAtZero: true
+                        title: {
+                            display: true,
+                            text: 'Length of Service Distribution',
+                            font: {
+                                size: 16
                             }
                         }
                     }
-                });
-                console.log("Chart successfully initialized!");
-            } catch (e) {
-                console.error("CRITICAL ERROR: Failed to create new Chart instance:", e);
-            }
-        }
-
-        document.addEventListener('livewire:load', function() {
-            renderChart();
-
-            Livewire.hook('message.processed', () => {
-                renderChart();
+                }
             });
+        });
+
+        Livewire.hook('beforeDomUpdate', (el, component) => {
+            const chartCanvas = el.querySelector('#serviceChart');
+            if (chartCanvas) {
+                chartCanvas.removeAttribute('data-chart'); 
+            }
         });
     </script>
 @endpush
-</script>
