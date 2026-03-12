@@ -1,6 +1,6 @@
-<div class="w-full h-full flex gap-10">
+<div class="w-full h-full flex gap-10 ">
     <div class="flex-1 h-full flex flex-col gap-10">
-        <div class="w-full h-[200px] grid grid-cols-3 gap-10">
+        <div class="w-full h-[150px] grid grid-cols-3 gap-10">
             <div class="bg-white rounded-lg shadow-sm flex items-center justify-between p-6">
                 <div class="w-[72px] h-[72px] bg-green-100 rounded-lg grid place-items-center">
                     <i class="fas fa-users text-green-400 text-5xl"></i>
@@ -29,20 +29,13 @@
                 </div>
             </div>
         </div>
-        <div class="flex-1 grid grid-cols-3 gap-10 ">
-            {{-- CHART   --}}
-            <div class="grid place-items-center bg-white rounded-lg shadow-sm p-6">
-                <canvas id="serviceChart" data-chart='@json($serviceGroups)' class="w-full h-full"></canvas>
-            </div>
-
-
-            {{-- LEAVE CREDITS   --}}
+        <div class="flex-1 grid grid-cols-3 gap-10">
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <p class="text-gray-600 font-semibold text-xl">
                     Leave Credits <i><b>Ranking</b></i>
                 </p>
 
-                <div class="mt-4 h-full overflow-y-auto pr-2">
+                <div class="mt-4 h-[420px] overflow-y-auto pr-2">
                     <table class="w-full text-sm text-left text-gray-700 border-collapse">
                         <thead>
                             <tr class="bg-gray-200 border-b border-gray-300 text-xs">
@@ -53,7 +46,7 @@
                         </thead>
 
                         <tbody>
-                            @foreach ($employees as $index => $emp)
+                            @foreach ($employees->sortByDesc(fn($e) => $e->latest_vac + $e->latest_sick) as $emp)
                                 <tr class="border-b border-gray-200 hover:bg-gray-50">
                                     <td class="py-2 px-3 text-xs" width="40%">
                                         {{ ucfirst(strtolower($emp->last_name)) }},
@@ -77,7 +70,6 @@
             </div>
 
 
-            {{-- NET BALANCE   --}}
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <p class="text-gray-600 font-semibold text-xl">
                     Net Balance <i><b>Under 5K</b></i>
@@ -110,11 +102,15 @@
                     </table>
                 </div>
             </div>
+
+
+            <div wire:ignore class="grid place-items-center bg-white rounded-lg shadow-sm p-6">
+                <canvas id="serviceChart" data-chart='@json($serviceGroups)' class="w-full h-full"></canvas>
+            </div>
         </div>
     </div>
 
-    {{-- SERVICE  --}}
-    <div class="w-[400px] h-full bg-white rounded-lg shadow-sm p-6">
+    <div class="w-[400px] h-full bg-white rounded-lg shadow-sm p-6 overflow-y-auto">
         <p class="text-gray-600 text-5xl text-center"><i class="fa-solid fa-award"></i></p>
         <p class="text-gray-600 text-sm font-black text-center mb-8 mt-2"><i>LENGTH OF SERVICE RANKING</i></p>
 
@@ -125,73 +121,73 @@
                 <option value="15_up">15+ years</option>
                 <option value="10_14">10-14 years</option>
                 <option value="5_9">5-9 years</option>
-                <option value="below_4">Below 4 years</option>
+                <option value="below_5">Below 5 years</option>
             </select>
-
-            {{ $sort }}
         </div>
 
 
-        <ul class="divide-y divide-gray-100">
-            @foreach ($employees as $emp)
-                @php
-                    $years = $emp->years_of_service_details['years'] ?? 0;
-                    $months = $emp->years_of_service_details['months'] ?? 0;
+        <div class="w-full h-[480px] overflow-y-auto">
+            <ul class="divide-y divide-gray-100">
+                @foreach ($rankedEmployees as $emp)
+                    @php
+                        $years = $emp->years_of_service_details['years'] ?? 0;
+                        $months = $emp->years_of_service_details['months'] ?? 0;
 
-                    $duration = '';
-                    if ($years > 0) {
-                        $duration .= "{$years}y ";
-                    }
-                    if ($months > 0) {
-                        $duration .= "{$months}m";
-                    }
-                    $duration = trim($duration);
+                        $duration = '';
+                        if ($years > 0) {
+                            $duration .= "{$years}y ";
+                        }
+                        if ($months > 0) {
+                            $duration .= "{$months}m";
+                        }
+                        $duration = trim($duration);
 
-                    $medalClass = '';
-                    $rankIcon = '';
-                    $rankTextSize = 'text-2xl';
+                        $medalClass = '';
+                        $rankIcon = '';
+                        $rankTextSize = 'text-2xl';
 
-                    if ($loop->iteration === 1) {
-                        $medalClass = 'text-yellow-500';
-                        $rankIcon = '<i class="fa-solid fa-medal"></i>';
-                    } elseif ($loop->iteration === 2) {
-                        $medalClass = 'text-gray-400';
-                        $rankIcon = '<i class="fa-solid fa-medal"></i>';
-                    } elseif ($loop->iteration === 3) {
-                        $medalClass = 'text-amber-700';
-                        $rankIcon = '<i class="fa-solid fa-medal"></i>';
-                    } else {
-                        $rankIcon = $loop->iteration . '.';
-                        $rankTextSize = 'text-lg text-gray-700';
-                    }
-                @endphp
+                        if ($loop->iteration === 1) {
+                            $medalClass = 'text-yellow-500';
+                            $rankIcon = '<i class="fa-solid fa-medal"></i>';
+                        } elseif ($loop->iteration === 2) {
+                            $medalClass = 'text-gray-400';
+                            $rankIcon = '<i class="fa-solid fa-medal"></i>';
+                        } elseif ($loop->iteration === 3) {
+                            $medalClass = 'text-amber-700';
+                            $rankIcon = '<i class="fa-solid fa-medal"></i>';
+                        } else {
+                            $rankIcon = $loop->iteration . '.';
+                            $rankTextSize = 'text-lg text-gray-700';
+                        }
+                    @endphp
 
-                <li class="flex items-center py-1">
-                    <div class="flex items-center space-x-4">
-                        <span class="font-bold w-8 text-center {{ $medalClass }} {{ $rankTextSize }}"
-                            title="Rank {{ $loop->iteration }}">
-                            {!! $rankIcon !!}
-                        </span>
-                        <div class="py-1">
-                            <div class="font-bold text-gray-700">
-                                {{ $emp->last_name }}, {{ $emp->first_name }}
-                                {{ $emp->middlename
-                                    ? strtoupper(substr($emp->middlename, 0, 1)) . '.'
-                                    : ($emp->middle_initial
-                                        ? strtoupper(substr($emp->middle_initial, 0, 1)) . '.'
-                                        : '') }}
+                    <li class="flex items-center py-1">
+                        <div class="flex items-center space-x-4">
+                            <span class="font-bold w-8 text-center {{ $medalClass }} {{ $rankTextSize }}"
+                                title="Rank {{ $loop->iteration }}">
+                                {!! $rankIcon !!}
+                            </span>
+                            <div class="py-1">
+                                <div class="font-bold text-gray-700">
+                                    {{ $emp->last_name }}, {{ $emp->first_name }}
+                                    {{ $emp->middlename
+                                        ? strtoupper(substr($emp->middlename, 0, 1)) . '.'
+                                        : ($emp->middle_initial
+                                            ? strtoupper(substr($emp->middle_initial, 0, 1)) . '.'
+                                            : '') }}
+                                </div>
+                                <div class="font-mono text-xs text-gray-500">
+                                    {{ $duration ?: 'Less than 1 month / N/A' }}
+                                </div>
+                                @if (!$emp->appointed_date)
+                                    <span class="text-xs text-red-500 italic">No appointment date</span>
+                                @endif
                             </div>
-                            <div class="font-mono text-xs text-gray-500">
-                                {{ $duration ?: 'Less than 1 month / N/A' }}
-                            </div>
-                            @if (!$emp->appointed_date)
-                                <span class="text-xs text-red-500 italic">No appointment date</span>
-                            @endif
                         </div>
-                    </div>
-                </li>
-            @endforeach
-        </ul>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
     </div>
 </div>
 @push('scripts')
@@ -249,11 +245,10 @@
                 }
             });
         });
-
         Livewire.hook('beforeDomUpdate', (el, component) => {
             const chartCanvas = el.querySelector('#serviceChart');
             if (chartCanvas) {
-                chartCanvas.removeAttribute('data-chart'); 
+                chartCanvas.removeAttribute('data-chart');
             }
         });
     </script>

@@ -38,9 +38,11 @@
         <div class="w-[224px] h-screen sticky top-0 bg-white">
             @include('partials.sidebar')
         </div>
-        <div class="flex-1 min-h-screen bg-gray-200 flex flex-col">
+        <div class="flex-1 h-screen bg-gray-200 flex flex-col">
             @include('partials.navbar')
-            @yield('content')
+            <div class="flex-1 h-[calc(100vh-64px)] overflow-y-auto">
+                @yield('content')
+            </div>
         </div>
     </div>
 
@@ -67,4 +69,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @stack('scripts')
 </body>
+
 </html>
