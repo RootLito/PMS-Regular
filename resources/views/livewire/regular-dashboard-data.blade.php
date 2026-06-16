@@ -1,7 +1,7 @@
-<div class="w-full h-full flex gap-10 ">
-    <div class="flex-1 h-full flex flex-col gap-10">
-        <div class="w-full h-[150px] grid grid-cols-3 gap-10">
-            <div class="bg-white rounded-lg shadow-sm flex items-center justify-between p-6">
+<div class="w-full h-full flex gap-6 ">
+    <div class="flex-1 h-full flex flex-col gap-6">
+        <div class="w-full h-[150px] grid grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg  flex items-center justify-between p-6">
                 <div class="w-[72px] h-[72px] bg-green-100 rounded-lg grid place-items-center">
                     <i class="fas fa-users text-green-400 text-5xl"></i>
                 </div>
@@ -10,7 +10,7 @@
                     <p class="text-gray-600 font-semibold">Total Employee</p>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm flex items-center justify-between p-6">
+            <div class="bg-white rounded-lg  flex items-center justify-between p-6">
                 <div class="w-[72px] h-[72px] bg-blue-100 rounded-lg grid place-items-center">
                     <i class="fas fa-mars text-blue-400 text-5xl"></i>
                 </div>
@@ -19,7 +19,7 @@
                     <p class="text-gray-600 font-semibold">Male</p>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm flex items-center justify-between p-6">
+            <div class="bg-white rounded-lg  flex items-center justify-between p-6">
                 <div class="w-[72px] h-[72px] bg-red-100 rounded-lg grid place-items-center">
                     <i class="fas fa-venus text-red-400 text-5xl"></i>
                 </div>
@@ -29,8 +29,8 @@
                 </div>
             </div>
         </div>
-        <div class="flex-1 grid grid-cols-3 gap-10">
-            <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex-1 grid grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg  p-6">
                 <p class="text-gray-600 font-semibold text-xl">
                     Leave Credits <i><b>Ranking</b></i>
                 </p>
@@ -70,7 +70,7 @@
             </div>
 
 
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="bg-white rounded-lg  p-6">
                 <p class="text-gray-600 font-semibold text-xl">
                     Net Balance <i><b>Under 5K</b></i>
                 </p>
@@ -104,19 +104,20 @@
             </div>
 
 
-            <div wire:ignore class="grid place-items-center bg-white rounded-lg shadow-sm p-6">
+            <div wire:ignore class="grid place-items-center bg-white rounded-lg  p-6">
                 <canvas id="serviceChart" data-chart='@json($serviceGroups)' class="w-full h-full"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="w-[400px] h-full bg-white rounded-lg shadow-sm p-6 overflow-y-auto">
+    <div class="w-[400px] h-full bg-white rounded-lg  p-6 overflow-y-auto">
         <p class="text-gray-600 text-5xl text-center"><i class="fa-solid fa-award"></i></p>
         <p class="text-gray-600 text-sm font-black text-center mb-8 mt-2"><i>LENGTH OF SERVICE RANKING</i></p>
+        
 
         <div class="w-full grid place-items-center">
             <select wire:model.live="sort"
-                class="shadow-sm border rounded border-gray-200 px-4 py-2 mb-8 mx-auto text-sm text-gray-600">
+                class=" border rounded border-gray-200 px-4 py-2 mb-8 mx-auto text-sm text-gray-600">
                 <option value="">Overall Ranking</option>
                 <option value="15_up">15+ years</option>
                 <option value="10_14">10-14 years</option>
